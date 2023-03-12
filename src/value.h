@@ -1,10 +1,13 @@
 #ifndef VALUE_H
 #define VALUE_H
 
-#include <iostream>
 #include <memory>
 
 enum class ValueType { BOOLEAN, NUMERIC, STRING, NIL, SYMBOL, PAIR };
+
+class Value;
+
+using ValuePtr = std::shared_ptr<Value>;
 
 class Value {
 private:
@@ -14,7 +17,7 @@ protected:
     Value(ValueType type) : type{type} {}
 
 public:
-    virtual ~Value() = default;
+    virtual ~Value() {}
     virtual std::string toString() const;
 };
 
@@ -64,12 +67,12 @@ public:
 
 class PairValue : public Value {
 private:
-    std::shared_ptr<Value> l_part;
-    std::shared_ptr<Value> r_part;
+    ValuePtr l_part;
+    ValuePtr r_part;
     void toStringRecursive(std::string& res, const PairValue& pair) const;
 
 public:
-    PairValue(std::shared_ptr<Value> l_part, std::shared_ptr<Value> r_part)
+    PairValue(ValuePtr l_part, ValuePtr r_part)
         : Value(ValueType::PAIR), l_part{l_part}, r_part{r_part} {}
     std::string toString() const override;
 

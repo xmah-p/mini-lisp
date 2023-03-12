@@ -4,6 +4,8 @@
 #include <sstream>
 #include <typeinfo>
 
+std::string Value::toString() const { return "UNKNOWN VALUE"; }
+
 std::string BooleanValue::toString() const {
     return value == true ? "#t" : "#f";
 }
@@ -20,33 +22,30 @@ std::string StringValue::toString() const {
     return oss.str();
 }
 
-std::string NilValue::toString() const {
-    return "()";
-}
+std::string NilValue::toString() const { return "()"; }
 
-std::string SymbolValue::toString() const {
-    return name;
-}
+std::string SymbolValue::toString() const { return name; }
 
-void PairValue::toStringRecursive(std::string& res, const PairValue& pair) const {
+void PairValue::toStringRecursive(std::string& res,
+                                  const PairValue& pair) const {
     auto l_part{pair.l_part};
     auto r_part{pair.r_part};
 
     res.append(l_part->toString());
+    res.push_back(' ');
 
     if (typeid(*r_part) == typeid(NilValue)) {
         return;
-    }
-    else if (auto rp{dynamic_pointer_cast<const PairValue>(r_part)}) {
+    } else if (auto rp{dynamic_pointer_cast<const PairValue>(r_part)}) {
         rp->toStringRecursive(res, *rp);
-    }
-    else {
+    } else {
+        res.append(". ");
         res.append(r_part->toString());
     }
 }
 
 std::string PairValue::toString() const {
-    std::string res{'('};
+    std::string res{"("};
     toStringRecursive(res, *this);
     res.push_back(')');
     return res;
