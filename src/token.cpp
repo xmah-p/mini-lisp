@@ -8,30 +8,52 @@ using namespace std::literals;
 TokenPtr Token::fromChar(char c) {
     TokenType type;
     switch (c) {
-        case '(': type = TokenType::LEFT_PAREN; break;
-        case ')': type = TokenType::RIGHT_PAREN; break;
-        case '\'': type = TokenType::QUOTE; break;
-        case '`': type = TokenType::QUASIQUOTE; break;
-        case ',': type = TokenType::UNQUOTE; break;
+        case '(':
+            type = TokenType::LEFT_PAREN;
+            break;
+        case ')':
+            type = TokenType::RIGHT_PAREN;
+            break;
+        case '\'':
+            type = TokenType::QUOTE;
+            break;
+        case '`':
+            type = TokenType::QUASIQUOTE;
+            break;
+        case ',':
+            type = TokenType::UNQUOTE;
+            break;
         // DOT not listed here, because it can be part of identifier/literal.
-        default: return nullptr;
+        default:
+            return nullptr;
     }
     return TokenPtr(new Token(type));
 }
 
-TokenPtr Token::dot() {
-    return TokenPtr(new Token(TokenType::DOT));
-}
+TokenPtr Token::dot() { return TokenPtr(new Token(TokenType::DOT)); }
 
 std::string Token::toString() const {
     switch (type) {
-        case TokenType::LEFT_PAREN: return "(LEFT_PAREN)"; break;
-        case TokenType::RIGHT_PAREN: return "(RIGHT_PAREN)"; break;
-        case TokenType::QUOTE: return "(QUOTE)"; break;
-        case TokenType::QUASIQUOTE: return "(QUASIQUOTE)"; break;
-        case TokenType::UNQUOTE: return "(UNQUOTE)"; break;
-        case TokenType::DOT: return "(DOT)"; break;
-        default: return "(UNKNOWN)";
+        case TokenType::LEFT_PAREN:
+            return "(LEFT_PAREN)";
+            break;
+        case TokenType::RIGHT_PAREN:
+            return "(RIGHT_PAREN)";
+            break;
+        case TokenType::QUOTE:
+            return "(QUOTE)";
+            break;
+        case TokenType::QUASIQUOTE:
+            return "(QUASIQUOTE)";
+            break;
+        case TokenType::UNQUOTE:
+            return "(UNQUOTE)";
+            break;
+        case TokenType::DOT:
+            return "(DOT)";
+            break;
+        default:
+            return "(UNKNOWN)";
     }
 }
 

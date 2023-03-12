@@ -6,7 +6,7 @@
 int main() {
     while (true) {
         try {
-            std::cout << ">>> " ;
+            std::cout << ">>> ";
             std::string line;
             std::getline(std::cin, line);
             if (std::cin.eof()) {
