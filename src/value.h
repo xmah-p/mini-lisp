@@ -1,6 +1,7 @@
 #ifndef VALUE_H
 #define VALUE_H
 
+#include <deque>
 #include <memory>
 
 enum class ValueType { BOOLEAN, NUMERIC, STRING, NIL, SYMBOL, PAIR };
@@ -17,6 +18,7 @@ protected:
     Value(ValueType type) : type{type} {}
 
 public:
+    Value() = default;  // not using yet
     virtual ~Value() {}
     virtual std::string toString() const;
 };
@@ -75,7 +77,7 @@ public:
     PairValue(ValuePtr l_part, ValuePtr r_part)
         : Value(ValueType::PAIR), l_part{l_part}, r_part{r_part} {}
     std::string toString() const override;
-
+    static ValuePtr makeList(std::deque<ValuePtr> lst);
 };
 
 #endif

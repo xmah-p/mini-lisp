@@ -50,3 +50,15 @@ std::string PairValue::toString() const {
     res.push_back(')');
     return res;
 }
+
+ValuePtr PairValue::makeList(std::deque<ValuePtr> lst) {
+    if (lst.size() == 1) {
+        return std::make_shared<PairValue>(lst.front(),
+                                           std::make_shared<NilValue>());
+    } else {
+        auto car = lst.front();
+        lst.pop_front();
+        auto cdr = makeList(lst);
+        return std::make_shared<PairValue>(car, cdr);
+    }
+}

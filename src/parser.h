@@ -13,8 +13,8 @@ private:
 public:
     Parser() = default;
     Parser(std::deque<TokenPtr> tokens) : tokens{std::move(tokens)} {}
-    ValuePtr parse();
-    ValuePtr parseTails();
+    ValuePtr parse();  // parse the first element of tokens, return its valuePtr
+    ValuePtr parseTails();  // return valueptr of S-expression
 };
 
 #endif
