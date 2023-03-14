@@ -35,6 +35,27 @@ ValuePtr Parser::parse() {
         return value;
     }
 
+    if (token->getType() == TokenType::QUOTE) {
+        auto quote = std::make_shared<SymbolValue>("quote");
+        tokens.pop_front();
+        auto value = parse();
+        return PairValue::makeList({quote, value});
+    }
+
+    if (token->getType() == TokenType::QUASIQUOTE) {
+        auto quasiquote = std::make_shared<SymbolValue>("quasiquote");
+        tokens.pop_front();
+        auto value = parse();
+        return PairValue::makeList({quasiquote, value});
+    }
+
+    if (token->getType() == TokenType::UNQUOTE) {
+        auto unquote = std::make_shared<SymbolValue>("unquote");
+        tokens.pop_front();
+        auto value = parse();
+        return PairValue::makeList({unquote, value});
+    }
+
     throw SyntaxError("Unimplemented");
 }
 
