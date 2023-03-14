@@ -3,6 +3,7 @@
 
 #include "./tokenizer.h"
 #include "./value.h"
+#include "./parser.h"
 
 int main() {
     while (true) {
@@ -14,9 +15,9 @@ int main() {
                 std::exit(0);
             }
             auto tokens = Tokenizer::tokenize(line);
-            for (auto& token : tokens) {
-                std::cout << *token << std::endl;
-            }
+            Parser parser(std::move(tokens));
+            auto value = parser.parse();
+            std::cout << value->toString() << std::endl;
         } catch (std::runtime_error& e) {
             std::cerr << "Error: " << e.what() << std::endl;
         }
