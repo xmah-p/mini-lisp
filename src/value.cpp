@@ -2,7 +2,7 @@
 
 #include <iomanip>
 #include <sstream>
-#include <typeinfo>
+#include <algorithm>
 
 #include "./error.h"
 
@@ -10,7 +10,7 @@ Value::~Value() {}
 
 std::vector<ValuePtr> Value::toVector() {
     auto pr = dynamic_cast<PairValue*>(this);
-    std::vector<ValuePtr> vec{};
+    std::vector<ValuePtr> vec;
     do {
         vec.push_back(pr->car());
     } while (pr = dynamic_cast<PairValue*>(pr->cdr().get()));
@@ -18,8 +18,7 @@ std::vector<ValuePtr> Value::toVector() {
 }
 
 std::optional<std::string> Value::asSymbol() const {
-    if (auto sym =
-            dynamic_cast<const SymbolValue*>(this))
+    if (auto sym = dynamic_cast<const SymbolValue*>(this))
         return sym->toString();
     return std::nullopt;
 }
@@ -34,7 +33,8 @@ bool Value::isSelfEvaluating(ValuePtr expr) {
         dynamic_pointer_cast<StringValue>(expr) ||
         dynamic_pointer_cast<BooleanValue>(expr))
         return true;
-    return false;
+    else
+        return false;
 }
 
 bool Value::isList(ValuePtr expr) {
@@ -42,7 +42,7 @@ bool Value::isList(ValuePtr expr) {
     return false;
 }
 
-std::string Value::toString() const { return "UNKNOWN VALUE"; }
+std::string Value::toString() const { return ""; }
 
 std::string BooleanValue::toString() const {
     return value == true ? "#t" : "#f";
@@ -70,14 +70,14 @@ void PairValue::toStringRecursive(std::string& res,
     auto r_part{pair.r_part};
 
     res.append(l_part->toString());
-    res.push_back(' ');
 
-    if (typeid(*r_part) == typeid(NilValue)) {
+    if (dynamic_pointer_cast<NilValue>(r_part)) 
         return;
-    } else if (auto rp{dynamic_pointer_cast<const PairValue>(r_part)}) {
+     else if (auto rp = dynamic_pointer_cast<PairValue>(r_part)) {
+        res.push_back(' ');
         rp->toStringRecursive(res, *rp);
     } else {
-        res.append(". ");
+        res.append(" . ");
         res.append(r_part->toString());
     }
 }
@@ -89,13 +89,14 @@ std::string PairValue::toString() const {
     return res;
 }
 
-ValuePtr PairValue::makeList(std::deque<ValuePtr> lst) {
+ValuePtr Value::makeList(std::vector<ValuePtr> lst) {
+    std::reverse(lst.begin(), lst.end());
     if (lst.size() == 1) {
         return std::make_shared<PairValue>(lst.front(),
                                            std::make_shared<NilValue>());
     } else {
-        auto car = lst.front();
-        lst.pop_front();
+        auto car = lst.back();
+        lst.pop_back();
         auto cdr = makeList(lst);
         return std::make_shared<PairValue>(car, cdr);
     }

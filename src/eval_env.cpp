@@ -21,6 +21,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
 
         if (vec[0]->asSymbol() == "define"s) {
             if (auto name = vec[1]->asSymbol()) {
+                // TODO：抛出操作数异常 
                 symbol_list[*name] = vec[2];
                 return std::make_shared<NilValue>();
             } else {

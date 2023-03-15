@@ -4,56 +4,49 @@
 
 ValuePtr Parser::parse() {
     auto token = std::move(this->tokens.front());
+    tokens.pop_front();
 
     if (token->getType() == TokenType::NUMERIC_LITERAL) {
         auto value = static_cast<NumericLiteralToken&>(*token).getValue();
-        tokens.pop_front();
         return std::make_shared<NumericValue>(value);
     }
 
     if (token->getType() == TokenType::BOOLEAN_LITERAL) {
         auto value = static_cast<BooleanLiteralToken&>(*token).getValue();
-        tokens.pop_front();
         return std::make_shared<BooleanValue>(value);
     }
 
     if (token->getType() == TokenType::STRING_LITERAL) {
         auto value = static_cast<StringLiteralToken&>(*token).getValue();
-        tokens.pop_front();
         return std::make_shared<StringValue>(value);
     }
 
     if (token->getType() == TokenType::IDENTIFIER) {
         auto value = static_cast<IdentifierToken&>(*token).getName();
-        tokens.pop_front();
         return std::make_shared<SymbolValue>(value);
     }
 
     if (token->getType() == TokenType::LEFT_PAREN) {
-        tokens.pop_front();
         auto value = parseTails();
         return value;
     }
 
     if (token->getType() == TokenType::QUOTE) {
         auto quote = std::make_shared<SymbolValue>("quote");
-        tokens.pop_front();
         auto value = parse();
-        return PairValue::makeList({quote, value});
+        return Value::makeList({quote, value});
     }
 
     if (token->getType() == TokenType::QUASIQUOTE) {
         auto quasiquote = std::make_shared<SymbolValue>("quasiquote");
-        tokens.pop_front();
         auto value = parse();
-        return PairValue::makeList({quasiquote, value});
+        return Value::makeList({quasiquote, value});
     }
 
     if (token->getType() == TokenType::UNQUOTE) {
         auto unquote = std::make_shared<SymbolValue>("unquote");
-        tokens.pop_front();
         auto value = parse();
-        return PairValue::makeList({unquote, value});
+        return Value::makeList({unquote, value});
     }
 
     throw SyntaxError("Unimplemented");

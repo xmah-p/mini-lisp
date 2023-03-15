@@ -1,10 +1,9 @@
 #ifndef VALUE_H
 #define VALUE_H
 
-#include <deque>
 #include <memory>
-#include <vector>
 #include <optional>
+#include <vector>
 
 enum class ValueType { BOOLEAN, NUMERIC, STRING, NIL, SYMBOL, PAIR };
 
@@ -20,15 +19,14 @@ protected:
     Value(ValueType type) : type{type} {}
 
 public:
-    Value() = default;  // not using yet
-
-    std::vector<ValuePtr> toVector();
-    std::optional<std::string> asSymbol() const;
     virtual ~Value() = 0;
+    std::vector<ValuePtr> toVector();    // return vector storing the list
+    std::optional<std::string> asSymbol() const;    // return its name if symbol
     virtual std::string toString() const;
     static bool isNil(ValuePtr expr);
-    static bool isSelfEvaluating(ValuePtr expr);
+    static bool isSelfEvaluating(ValuePtr expr);    // return true if numeric / string / boolean
     static bool isList(ValuePtr expr);
+    static ValuePtr makeList(std::vector<ValuePtr> lst);
 
     // Value 是抽象类 不能使用 make_shared<Value>()
 };
@@ -89,7 +87,6 @@ public:
     ValuePtr car() const { return l_part; }
     ValuePtr cdr() const { return r_part; }
     std::string toString() const override;
-    static ValuePtr makeList(std::deque<ValuePtr> lst);
 };
 
 #endif
