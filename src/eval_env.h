@@ -11,5 +11,4 @@ public:
     static std::unordered_map<std::string, ValuePtr> symbol_list;
 };
 
-
 #endif
