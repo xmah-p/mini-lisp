@@ -3,6 +3,8 @@
 
 #include <deque>
 #include <memory>
+#include <vector>
+#include <optional>
 
 enum class ValueType { BOOLEAN, NUMERIC, STRING, NIL, SYMBOL, PAIR };
 
@@ -19,8 +21,16 @@ protected:
 
 public:
     Value() = default;  // not using yet
-    virtual ~Value() {}
+
+    std::vector<ValuePtr> toVector();
+    std::optional<std::string> asSymbol() const;
+    virtual ~Value() = 0;
     virtual std::string toString() const;
+    static bool isNil(ValuePtr expr);
+    static bool isSelfEvaluating(ValuePtr expr);
+    static bool isList(ValuePtr expr);
+
+    // Value 是抽象类 不能使用 make_shared<Value>()
 };
 
 class BooleanValue : public Value {
@@ -76,6 +86,8 @@ private:
 public:
     PairValue(ValuePtr l_part, ValuePtr r_part)
         : Value(ValueType::PAIR), l_part{l_part}, r_part{r_part} {}
+    ValuePtr car() const { return l_part; }
+    ValuePtr cdr() const { return r_part; }
     std::string toString() const override;
     static ValuePtr makeList(std::deque<ValuePtr> lst);
 };
