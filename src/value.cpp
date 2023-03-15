@@ -4,6 +4,44 @@
 #include <sstream>
 #include <typeinfo>
 
+#include "./error.h"
+
+Value::~Value() {}
+
+std::vector<ValuePtr> Value::toVector() {
+    auto pr = dynamic_cast<PairValue*>(this);
+    std::vector<ValuePtr> vec{};
+    do {
+        vec.push_back(pr->car());
+    } while (pr = dynamic_cast<PairValue*>(pr->cdr().get()));
+    return vec;
+}
+
+std::optional<std::string> Value::asSymbol() const {
+    if (auto sym =
+            dynamic_cast<const SymbolValue*>(this))
+        return sym->toString();
+    return std::nullopt;
+}
+
+bool Value::isNil(ValuePtr expr) {
+    if (dynamic_pointer_cast<NilValue>(expr)) return true;
+    return false;
+}
+
+bool Value::isSelfEvaluating(ValuePtr expr) {
+    if (dynamic_pointer_cast<NumericValue>(expr) ||
+        dynamic_pointer_cast<StringValue>(expr) ||
+        dynamic_pointer_cast<BooleanValue>(expr))
+        return true;
+    return false;
+}
+
+bool Value::isList(ValuePtr expr) {
+    if (dynamic_pointer_cast<PairValue>(expr)) return true;
+    return false;
+}
+
 std::string Value::toString() const { return "UNKNOWN VALUE"; }
 
 std::string BooleanValue::toString() const {
