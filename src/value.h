@@ -5,11 +5,20 @@
 #include <optional>
 #include <vector>
 
-enum class ValueType { BOOLEAN, NUMERIC, STRING, NIL, SYMBOL, PAIR };
+enum class ValueType {
+    BOOLEAN,
+    NUMERIC,
+    STRING,
+    NIL,
+    SYMBOL,
+    PAIR,
+    BUILTIN_PROC
+};
 
 class Value;
 
 using ValuePtr = std::shared_ptr<Value>;
+using BuiltinFuncType = ValuePtr(const std::vector<ValuePtr>&);
 
 class Value {
 private:
@@ -20,11 +29,14 @@ protected:
 
 public:
     virtual ~Value() = 0;
-    std::vector<ValuePtr> toVector();    // return vector storing the list
-    std::optional<std::string> asSymbol() const;    // return its name if symbol
+    std::vector<ValuePtr> toVector();  // return vector storing the list
+    std::optional<std::string> asSymbol() const;  // return its name if symbol
+    std::optional<double> asNumber() const;    // return its value if number
     virtual std::string toString() const;
+
     static bool isNil(ValuePtr expr);
-    static bool isSelfEvaluating(ValuePtr expr);    // return true if numeric / string / boolean
+    static bool isSelfEvaluating(
+        ValuePtr expr);  // return true if numeric / string / boolean
     static bool isList(ValuePtr expr);
     static ValuePtr makeList(std::vector<ValuePtr> lst);
 
@@ -46,6 +58,7 @@ private:
 
 public:
     NumericValue(double value) : Value(ValueType::NUMERIC), value{value} {}
+    double getVal() const;
     std::string toString() const override;
 };
 
@@ -87,6 +100,17 @@ public:
     ValuePtr car() const { return l_part; }
     ValuePtr cdr() const { return r_part; }
     std::string toString() const override;
+};
+
+class BuiltinProcValue : public Value {
+private:
+    BuiltinFuncType* func;
+
+public:
+    BuiltinProcValue(BuiltinFuncType* func)
+        : Value(ValueType::BUILTIN_PROC), func{func} {}
+    std::string toString() const override;
+    BuiltinFuncType* getFunc() const;
 };
 
 #endif

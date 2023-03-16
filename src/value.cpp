@@ -1,8 +1,8 @@
 #include "./value.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
-#include <algorithm>
 
 #include "./error.h"
 
@@ -20,6 +20,12 @@ std::vector<ValuePtr> Value::toVector() {
 std::optional<std::string> Value::asSymbol() const {
     if (auto sym = dynamic_cast<const SymbolValue*>(this))
         return sym->toString();
+    return std::nullopt;
+}
+
+std::optional<double> Value::asNumber() const {
+    if (auto num = dynamic_cast<const NumericValue*>(this))
+        return num->getVal();
     return std::nullopt;
 }
 
@@ -48,6 +54,8 @@ std::string BooleanValue::toString() const {
     return value == true ? "#t" : "#f";
 }
 
+double NumericValue::getVal() const { return value; }
+
 std::string NumericValue::toString() const {
     return (value - static_cast<int>(value)) == 0
                ? std::to_string(static_cast<int>(value))
@@ -71,9 +79,9 @@ void PairValue::toStringRecursive(std::string& res,
 
     res.append(l_part->toString());
 
-    if (dynamic_pointer_cast<NilValue>(r_part)) 
+    if (dynamic_pointer_cast<NilValue>(r_part))
         return;
-     else if (auto rp = dynamic_pointer_cast<PairValue>(r_part)) {
+    else if (auto rp = dynamic_pointer_cast<PairValue>(r_part)) {
         res.push_back(' ');
         rp->toStringRecursive(res, *rp);
     } else {
@@ -101,3 +109,7 @@ ValuePtr Value::makeList(std::vector<ValuePtr> lst) {
         return std::make_shared<PairValue>(car, cdr);
     }
 }
+
+std::string BuiltinProcValue::toString() const { return "#<procedure>"; }
+
+BuiltinFuncType* BuiltinProcValue::getFunc() const { return func; }
