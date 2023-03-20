@@ -3,8 +3,6 @@
 
 #include <unordered_map>
 
-#include "./error.h"
-#include "./eval_env.h"
 #include "./value.h"
 
 class Builtins {

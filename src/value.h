@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <string>
 
 enum class ValueType {
     BOOLEAN,

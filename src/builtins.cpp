@@ -1,4 +1,6 @@
 #include "./builtins.h"
+#include "./error.h"
+#include "./eval_env.h"
 
 
 ValuePtr Builtins::add(const std::vector<ValuePtr>& params) {

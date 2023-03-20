@@ -49,7 +49,11 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
             }
         } else {
             ValuePtr proc = eval(ls->car());
-            std::vector<ValuePtr> args = evalList(ls->cdr());
+            std::vector<ValuePtr> args;
+            if (Value::isList(ls->cdr()))
+                args = evalList(ls->cdr());
+            else
+                args.push_back(ls->cdr());
             return apply(proc, args);
         }
     }

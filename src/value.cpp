@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include "./error.h"
 
 Value::~Value() {}
 
@@ -13,7 +12,7 @@ std::vector<ValuePtr> Value::toVector() {
     std::vector<ValuePtr> vec;
     do {
         vec.push_back(pr->car());
-    } while (pr = dynamic_cast<PairValue*>(pr->cdr().get()));
+    } while ((pr = dynamic_cast<PairValue*>(pr->cdr().get())));
     return vec;
 }
 
