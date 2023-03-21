@@ -3,6 +3,7 @@
 1. 舍弃 NumericValue 的外部表示中尾部 0。
 2. 优化 parser::parse 的代码。
 3. EvalEnv::eval 中令 define 抛出操作数过多异常
+4. exit() 函数是特判
 
 
 # learn

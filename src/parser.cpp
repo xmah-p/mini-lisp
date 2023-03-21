@@ -53,13 +53,18 @@ ValuePtr Parser::parse() {
 }
 
 ValuePtr Parser::parseTails() {
+    if (tokens.size() == 0)
+        throw SyntaxError("Unexpected EOF");
+
     if (tokens.front()->getType() == TokenType::RIGHT_PAREN) {
         tokens.pop_front();
         return std::make_shared<NilValue>();
     }
     auto car = parse();
+    if (tokens.size() == 0) throw SyntaxError("Unexpected EOF");
     if (tokens.front()->getType() == TokenType::DOT) {
         tokens.pop_front();
+        if (tokens.size() == 0) throw SyntaxError("Unexpected EOF");
         auto cdr = parse();
         if (tokens.front()->getType() != TokenType::RIGHT_PAREN) {
             throw SyntaxError("Unexpected EOF; expect an element after .");

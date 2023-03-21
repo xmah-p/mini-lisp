@@ -63,8 +63,12 @@ std::string NumericValue::toString() const {
 
 std::string StringValue::toString() const {
     std::ostringstream oss;
-    oss << std::quoted(value);
+    oss << std::quoted(str);
     return oss.str();
+}
+
+std::string StringValue::getStr() const {
+    return str;
 }
 
 std::string NilValue::toString() const { return "()"; }

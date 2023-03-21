@@ -65,12 +65,13 @@ public:
 
 class StringValue : public Value {
 private:
-    std::string value;
+    std::string str;
 
 public:
-    StringValue(const std::string value)
-        : Value(ValueType::STRING), value{value} {}
+    StringValue(const std::string str)
+        : Value(ValueType::STRING), str{str} {}
     std::string toString() const override;
+    std::string getStr() const;
 };
 
 class NilValue : public Value {

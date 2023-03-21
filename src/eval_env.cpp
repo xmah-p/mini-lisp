@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "./builtins.h"
 #include "./error.h"
@@ -47,7 +49,18 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
             } else {
                 throw LispError("Malformed define.");
             }
-        } else {
+        }
+
+        else if (vec[0]->asSymbol() == "exit"s) {
+            std::vector<ValuePtr> args;
+            if (Value::isList(ls->cdr()))
+                args = evalList(ls->cdr());
+            else
+                args.push_back(ls->cdr());
+            Builtins::exit(args);
+        }
+
+        else {
             ValuePtr proc = eval(ls->car());
             std::vector<ValuePtr> args;
             if (Value::isList(ls->cdr()))
@@ -67,4 +80,6 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
 
     else
         throw LispError("Unknown expression.");
+
+    return std::make_shared<NilValue>();
 }
