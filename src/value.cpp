@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <memory>
 #include <sstream>
-
 
 Value::~Value() {}
 
@@ -42,18 +42,40 @@ bool Value::isSelfEvaluating(ValuePtr expr) {
         return false;
 }
 
-bool Value::isList(ValuePtr expr) {
+bool Value::isPair(ValuePtr expr) {
     if (dynamic_pointer_cast<PairValue>(expr)) return true;
     return false;
 }
 
-std::string Value::toString() const { return ""; }
+bool Value::isList(ValuePtr expr) {
+    if (isNil(expr)) return true;
+    if (isPair(expr)) {
+        if (auto pr = std::dynamic_pointer_cast<PairValue>(expr)) {
+            if (isList(pr->cdr()))
+                return true;
+            else
+                return false;
+        }
+    }
+    return false;
+}
+
+bool Value::isProcedure(ValuePtr expr) {
+    if (dynamic_pointer_cast<BuiltinProcValue>(expr)) return true;
+    return false;
+}
+
+std::string Value::toString() const {
+    return "";
+}
 
 std::string BooleanValue::toString() const {
     return value == true ? "#t" : "#f";
 }
 
-double NumericValue::getVal() const { return value; }
+double NumericValue::getVal() const {
+    return value;
+}
 
 std::string NumericValue::toString() const {
     return (value - static_cast<int>(value)) == 0
@@ -71,9 +93,13 @@ std::string StringValue::getStr() const {
     return str;
 }
 
-std::string NilValue::toString() const { return "()"; }
+std::string NilValue::toString() const {
+    return "()";
+}
 
-std::string SymbolValue::toString() const { return name; }
+std::string SymbolValue::toString() const {
+    return name;
+}
 
 void PairValue::toStringRecursive(std::string& res,
                                   const PairValue& pair) const {
@@ -113,6 +139,10 @@ ValuePtr Value::makeList(std::vector<ValuePtr> lst) {
     }
 }
 
-std::string BuiltinProcValue::toString() const { return "#<procedure>"; }
+std::string BuiltinProcValue::toString() const {
+    return "#<procedure>";
+}
 
-BuiltinFuncType* BuiltinProcValue::getFunc() const { return func; }
+BuiltinFuncType* BuiltinProcValue::getFunc() const {
+    return func;
+}

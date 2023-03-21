@@ -38,7 +38,10 @@ public:
     static bool isNil(ValuePtr expr);
     static bool isSelfEvaluating(
         ValuePtr expr);  // return true if numeric / string / boolean
+    static bool isPair(ValuePtr expr);
     static bool isList(ValuePtr expr);
+    static bool isProcedure(ValuePtr expr);
+
     static ValuePtr makeList(std::vector<ValuePtr> lst);
 
     // Value 是抽象类 不能使用 make_shared<Value>()
