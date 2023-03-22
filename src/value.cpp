@@ -8,11 +8,12 @@
 Value::~Value() {}
 
 std::vector<ValuePtr> Value::toVector() {
-    auto pr = dynamic_cast<PairValue*>(this);
     std::vector<ValuePtr> vec;
-    do {
-        vec.push_back(pr->car());
-    } while ((pr = dynamic_cast<PairValue*>(pr->cdr().get())));
+    if (auto pr = dynamic_cast<PairValue*>(this)) {
+        do {
+            vec.push_back(pr->car());
+        } while ((pr = dynamic_cast<PairValue*>(pr->cdr().get())));
+    }
     return vec;
 }
 

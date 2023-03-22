@@ -3,11 +3,13 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "./builtins.h"
 #include "./error.h"
+#include "./forms.h"
 
 std::unordered_map<std::string, ValuePtr> EvalEnv::symbol_list{};
 
@@ -41,33 +43,24 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         auto ls = dynamic_pointer_cast<PairValue>(expr);
         std::vector<ValuePtr> vec = ls->toVector();
 
-        if (vec[0]->asSymbol() == "define"s) {
-            if (auto name = vec[1]->asSymbol()) {
-                // TODO：抛出操作数异常
-                symbol_list[*name] = vec[2];
-                return std::make_shared<NilValue>();
-            } else {
-                throw LispError("Malformed define.");
+        if (auto name = vec[0]->asSymbol()) {
+            if (SpecialForm::form_list.find(*name) !=
+                SpecialForm::form_list.end()) {
+                auto form = SpecialForm::form_list.at(*name);
+                form(ls->cdr()->toVector(), *this);
             }
-        }
 
-        else if (vec[0]->asSymbol() == "exit"s) {
-            std::vector<ValuePtr> args;
-            if (Value::isList(ls->cdr()))
-                args = evalList(ls->cdr());
-            else
-                args.push_back(ls->cdr());
-            Builtins::exit(args);
-        }
+            else if (auto proc = symbol_list[*name]) {
+                std::vector<ValuePtr> args;
+                if (Value::isList(ls->cdr()))
+                    args = evalList(ls->cdr());
+                else
+                    args.push_back(eval(ls->cdr()));
+                return apply(proc, args);
+            }
 
-        else {
-            ValuePtr proc = eval(ls->car());
-            std::vector<ValuePtr> args;
-            if (Value::isList(ls->cdr()))
-                args = evalList(ls->cdr());
             else
-                args.push_back(ls->cdr());
-            return apply(proc, args);
+                throw LispError("Unbound variable " + *name);
         }
     }
 

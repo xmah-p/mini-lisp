@@ -37,6 +37,7 @@ private:
     static ValuePtr display(const std::vector<ValuePtr>& params);
     static ValuePtr newline(const std::vector<ValuePtr>& params);
     static ValuePtr print(const std::vector<ValuePtr>& params);
+    static ValuePtr exit(const std::vector<ValuePtr>& params);
 
     // comp
     static ValuePtr greater(const std::vector<ValuePtr>& params);
@@ -48,7 +49,6 @@ private:
 
 public:
     static void initSymbolList();
-    static void exit(const std::vector<ValuePtr>& params);
 };
 
 #endif

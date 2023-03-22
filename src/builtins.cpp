@@ -96,7 +96,8 @@ ValuePtr Builtins::car(const std::vector<ValuePtr>& params) {
                         " > 1");
     if (auto pr = std::dynamic_pointer_cast<PairValue>(params[0])) {
         return pr->car();
-    } else throw LispError("car: argument is not a pair");
+    } else
+        throw LispError("car: argument is not a pair");
 }
 
 ValuePtr Builtins::cdr(const std::vector<ValuePtr>& params) {
@@ -202,11 +203,12 @@ ValuePtr Builtins::isSymbol(const std::vector<ValuePtr>& params) {
 
 // core
 
-void Builtins::exit(const std::vector<ValuePtr>& params) {
-    if (params.size() != 1)
+ValuePtr Builtins::exit(const std::vector<ValuePtr>& params) {
+    if (params.size() > 1)
         throw LispError("Too many arguments: " + std::to_string(params.size()) +
                         " > 1");
-    int code = *params[0]->asNumber();
+    int code = 0;
+    if (params.size() == 1) code = *params[0]->asNumber();
     std::cout << "Program terminated with exit(" + std::to_string(code) + ")"
               << std::endl;
     std::exit(code);
@@ -345,6 +347,7 @@ void Builtins::initSymbolList() {
     EvalEnv::symbol_list["newline"] =
         std::make_shared<BuiltinProcValue>(&newline);
     EvalEnv::symbol_list["print"] = std::make_shared<BuiltinProcValue>(&print);
+    EvalEnv::symbol_list["exit"] = std::make_shared<BuiltinProcValue>(&exit);
 
     // comp
     EvalEnv::symbol_list["="] = std::make_shared<BuiltinProcValue>(&equalNum);
