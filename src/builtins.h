@@ -17,6 +17,10 @@ private:
     static ValuePtr divide(const std::vector<ValuePtr>& params);
     static ValuePtr abs(const std::vector<ValuePtr>& params);
 
+    // pair and list
+    static ValuePtr car(const std::vector<ValuePtr>& params);
+    static ValuePtr cdr(const std::vector<ValuePtr>& params);
+
     // type
     static ValuePtr isAtom(const std::vector<ValuePtr>& params);
     static ValuePtr isBoolean(const std::vector<ValuePtr>& params);

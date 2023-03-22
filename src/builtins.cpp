@@ -88,6 +88,27 @@ ValuePtr Builtins::abs(const std::vector<ValuePtr>& params) {
     return subtract(params);
 }
 
+// pair and list
+
+ValuePtr Builtins::car(const std::vector<ValuePtr>& params) {
+    if (params.size() != 1)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 1");
+    if (auto pr = std::dynamic_pointer_cast<PairValue>(params[0])) {
+        return pr->car();
+    } else throw LispError("car: argument is not a pair");
+}
+
+ValuePtr Builtins::cdr(const std::vector<ValuePtr>& params) {
+    if (params.size() != 1)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 1");
+    if (auto pr = std::dynamic_pointer_cast<PairValue>(params[0])) {
+        return pr->cdr();
+    } else
+        throw LispError("cdr: argument is not a pair");
+}
+
 // type
 
 ValuePtr Builtins::isAtom(const std::vector<ValuePtr>& params) {
@@ -296,12 +317,9 @@ void Builtins::initSymbolList() {
     EvalEnv::symbol_list["/"] = std::make_shared<BuiltinProcValue>(&divide);
     EvalEnv::symbol_list["abs"] = std::make_shared<BuiltinProcValue>(&abs);
 
-    // core
-    EvalEnv::symbol_list["display"] =
-        std::make_shared<BuiltinProcValue>(&display);
-    EvalEnv::symbol_list["newline"] =
-        std::make_shared<BuiltinProcValue>(&newline);
-    EvalEnv::symbol_list["print"] = std::make_shared<BuiltinProcValue>(&print);
+    // pair and list
+    EvalEnv::symbol_list["car"] = std::make_shared<BuiltinProcValue>(&car);
+    EvalEnv::symbol_list["cdr"] = std::make_shared<BuiltinProcValue>(&cdr);
 
     // type
     EvalEnv::symbol_list["atom?"] = std::make_shared<BuiltinProcValue>(&isAtom);
@@ -320,6 +338,13 @@ void Builtins::initSymbolList() {
         std::make_shared<BuiltinProcValue>(&isString);
     EvalEnv::symbol_list["symbol?"] =
         std::make_shared<BuiltinProcValue>(&isSymbol);
+
+    // core
+    EvalEnv::symbol_list["display"] =
+        std::make_shared<BuiltinProcValue>(&display);
+    EvalEnv::symbol_list["newline"] =
+        std::make_shared<BuiltinProcValue>(&newline);
+    EvalEnv::symbol_list["print"] = std::make_shared<BuiltinProcValue>(&print);
 
     // comp
     EvalEnv::symbol_list["="] = std::make_shared<BuiltinProcValue>(&equalNum);
