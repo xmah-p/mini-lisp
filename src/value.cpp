@@ -73,6 +73,10 @@ std::string BooleanValue::toString() const {
     return value == true ? "#t" : "#f";
 }
 
+bool BooleanValue::getBool() const {
+    return value;
+}
+
 double NumericValue::getVal() const {
     return value;
 }

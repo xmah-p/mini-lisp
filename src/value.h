@@ -53,6 +53,7 @@ private:
 
 public:
     BooleanValue(bool value) : Value(ValueType::BOOLEAN), value{value} {};
+    bool getBool() const;
     std::string toString() const override;
 };
 

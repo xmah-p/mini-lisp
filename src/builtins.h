@@ -12,6 +12,10 @@ class Builtins {
 private:
     // calc
     static ValuePtr add(const std::vector<ValuePtr>& params);
+    static ValuePtr subtract(const std::vector<ValuePtr>& params);
+    static ValuePtr multiply(const std::vector<ValuePtr>& params);
+    static ValuePtr divide(const std::vector<ValuePtr>& params);
+    static ValuePtr abs(const std::vector<ValuePtr>& params);
 
     // type
     static ValuePtr isAtom(const std::vector<ValuePtr>& params);
@@ -29,6 +33,14 @@ private:
     static ValuePtr display(const std::vector<ValuePtr>& params);
     static ValuePtr newline(const std::vector<ValuePtr>& params);
     static ValuePtr print(const std::vector<ValuePtr>& params);
+
+    // comp
+    static ValuePtr greater(const std::vector<ValuePtr>& params);
+    static ValuePtr lesser(const std::vector<ValuePtr>& params);
+    static ValuePtr equalNum(const std::vector<ValuePtr>& params);
+    static ValuePtr greaterOrEqual(const std::vector<ValuePtr>& params);
+    static ValuePtr lesserOrEqual(const std::vector<ValuePtr>& params);
+    static ValuePtr isZero(const std::vector<ValuePtr>& params);
 
 public:
     static void initSymbolList();

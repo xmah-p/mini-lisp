@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
+#include <vector>
 
 #include "./error.h"
 #include "./eval_env.h"
@@ -18,6 +20,72 @@ ValuePtr Builtins::add(const std::vector<ValuePtr>& params) {
         total += *num;
     }
     return std::make_shared<NumericValue>(total);
+}
+
+ValuePtr Builtins::subtract(const std::vector<ValuePtr>& params) {
+    if (params.size() > 2)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 2");
+
+    if (params.size() == 1) {
+        double minuend = 0;
+        auto subtrahend = params[0]->asNumber();
+        if (subtrahend == std::nullopt)
+            throw LispError("Cannot divide a non-numeric value.");
+        return std::make_shared<NumericValue>(minuend - *subtrahend);
+    } else {
+        auto minuend = params[0]->asNumber();
+        auto subtrahend = params[1]->asNumber();
+        if (subtrahend == std::nullopt || minuend == std::nullopt) {
+            throw LispError("Cannot do subtraction on non-numeric values.");
+        }
+        return std::make_shared<NumericValue>(*minuend - *subtrahend);
+    }
+}
+
+ValuePtr Builtins::multiply(const std::vector<ValuePtr>& params) {
+    double total{1};
+    for (auto& i : params) {
+        auto num = i->asNumber();
+        if (num == std::nullopt)
+            throw LispError("Cannot multiply a non-numeric value.");
+        total *= *num;
+    }
+    return std::make_shared<NumericValue>(total);
+}
+
+ValuePtr Builtins::divide(const std::vector<ValuePtr>& params) {
+    if (params.size() > 2)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 2");
+
+    if (params.size() == 1) {
+        double dividend = 1;
+        auto divisor = params[0]->asNumber();
+        if (divisor == std::nullopt)
+            throw LispError("Cannot divide a non-numeric value.");
+        if (*divisor == 0) throw LispError("Cannot divide zero.");
+        return std::make_shared<NumericValue>(dividend / *divisor);
+    } else {
+        auto dividend = params[0]->asNumber();
+        auto divisor = params[1]->asNumber();
+        if (divisor == std::nullopt || dividend == std::nullopt) {
+            throw LispError("Cannot do division on non-numeric values.");
+        }
+        if (*divisor == 0) throw LispError("Cannot divide zero.");
+        return std::make_shared<NumericValue>(*dividend / *divisor);
+    }
+}
+
+ValuePtr Builtins::abs(const std::vector<ValuePtr>& params) {
+    if (params.size() != 1)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 1");
+    if (std::dynamic_pointer_cast<BooleanValue>(
+            greaterOrEqual({params[0], std::make_shared<NumericValue>(0)}))
+            ->getBool() == true)
+        return params[0];
+    return subtract(params);
 }
 
 // type
@@ -145,9 +213,88 @@ ValuePtr Builtins::print(const std::vector<ValuePtr>& params) {
     return std::make_shared<NilValue>();
 }
 
+// comp
+
+ValuePtr Builtins::greater(const std::vector<ValuePtr>& params) {
+    if (params.size() > 2)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 2");
+    if (params.size() < 2)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 2");
+
+    auto num0 = params[0]->asNumber();
+    auto num1 = params[1]->asNumber();
+    if (num0 == std::nullopt || num1 == std::nullopt) {
+        throw LispError("Cannot compare non-numeric values.");
+    }
+    return std::make_shared<BooleanValue>(*num0 > *num1);
+}
+
+ValuePtr Builtins::lesser(const std::vector<ValuePtr>& params) {
+    if (params.size() > 2)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 2");
+    if (params.size() < 2)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 2");
+
+    auto num0 = params[0]->asNumber();
+    auto num1 = params[1]->asNumber();
+    if (num0 == std::nullopt || num1 == std::nullopt) {
+        throw LispError("Cannot compare non-numeric values.");
+    }
+    return std::make_shared<BooleanValue>(*num0 < *num1);
+}
+
+ValuePtr Builtins::equalNum(const std::vector<ValuePtr>& params) {
+    if (params.size() > 2)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 2");
+    if (params.size() < 2)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 2");
+
+    auto num0 = params[0]->asNumber();
+    auto num1 = params[1]->asNumber();
+    if (num0 == std::nullopt || num1 == std::nullopt) {
+        throw LispError("Cannot compare non-numeric values.");
+    }
+    return std::make_shared<BooleanValue>(*num0 == *num1);
+}
+
+ValuePtr Builtins::greaterOrEqual(const std::vector<ValuePtr>& params) {
+    if (std::dynamic_pointer_cast<BooleanValue>(greater(params))->getBool() ==
+            true ||
+        std::dynamic_pointer_cast<BooleanValue>(equalNum(params))->getBool() ==
+            true)
+        return std::make_shared<BooleanValue>(true);
+    return std::make_shared<BooleanValue>(false);
+}
+
+ValuePtr Builtins::lesserOrEqual(const std::vector<ValuePtr>& params) {
+    if (std::dynamic_pointer_cast<BooleanValue>(lesser(params))->getBool() ==
+            true ||
+        std::dynamic_pointer_cast<BooleanValue>(equalNum(params))->getBool() ==
+            true)
+        return std::make_shared<BooleanValue>(true);
+    return std::make_shared<BooleanValue>(false);
+}
+
+ValuePtr Builtins::isZero(const std::vector<ValuePtr>& params) {
+    if (params.size() > 1)
+        throw LispError("Too many arguments: " + std::to_string(params.size()) +
+                        " > 1");
+    return equalNum({params[0], std::make_shared<NumericValue>(0)});
+}
+
 void Builtins::initSymbolList() {
     // calc
     EvalEnv::symbol_list["+"] = std::make_shared<BuiltinProcValue>(&add);
+    EvalEnv::symbol_list["-"] = std::make_shared<BuiltinProcValue>(&subtract);
+    EvalEnv::symbol_list["*"] = std::make_shared<BuiltinProcValue>(&multiply);
+    EvalEnv::symbol_list["/"] = std::make_shared<BuiltinProcValue>(&divide);
+    EvalEnv::symbol_list["abs"] = std::make_shared<BuiltinProcValue>(&abs);
 
     // core
     EvalEnv::symbol_list["display"] =
@@ -173,4 +320,14 @@ void Builtins::initSymbolList() {
         std::make_shared<BuiltinProcValue>(&isString);
     EvalEnv::symbol_list["symbol?"] =
         std::make_shared<BuiltinProcValue>(&isSymbol);
+
+    // comp
+    EvalEnv::symbol_list["="] = std::make_shared<BuiltinProcValue>(&equalNum);
+    EvalEnv::symbol_list[">"] = std::make_shared<BuiltinProcValue>(&greater);
+    EvalEnv::symbol_list["<"] = std::make_shared<BuiltinProcValue>(&lesser);
+    EvalEnv::symbol_list[">="] =
+        std::make_shared<BuiltinProcValue>(&greaterOrEqual);
+    EvalEnv::symbol_list["<="] =
+        std::make_shared<BuiltinProcValue>(&lesserOrEqual);
+    EvalEnv::symbol_list["zero?"] = std::make_shared<BuiltinProcValue>(&isZero);
 }
