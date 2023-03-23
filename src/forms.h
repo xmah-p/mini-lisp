@@ -4,6 +4,7 @@
 #include "./eval_env.h"
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 using SpecialFormType = ValuePtr(const std::vector<ValuePtr>&, EvalEnv&);
 
@@ -12,6 +13,7 @@ private:
     static bool isVirtual(ValuePtr expr);
 
     static ValuePtr defineForm(const std::vector<ValuePtr>& args, EvalEnv& env);
+    static ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env);
     static ValuePtr quoteForm(const std::vector<ValuePtr>& args, EvalEnv& env);
     static ValuePtr ifForm(const std::vector<ValuePtr>& args, EvalEnv& env);
     static ValuePtr andForm(const std::vector<ValuePtr>& args, EvalEnv& env);

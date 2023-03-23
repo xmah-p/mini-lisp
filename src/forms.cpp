@@ -1,7 +1,10 @@
 #include "./forms.h"
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "./error.h"
 
@@ -19,11 +22,41 @@ ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
     if (args.size() < 2)
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 2");
+
+    // (define (double x) (+ x x) x)  <=>  (define double (lambda (x) (+ x x)))
     if (auto name = args[0]->asSymbol())
         EvalEnv::symbol_list[*name] = env.eval(args[1]);
-    else
-        throw LispError("Unimplemented");
+
+    else if (Value::isList(args[0])) {
+        auto vec = args[0]->toVector();
+        auto func = vec[0];
+        vec.erase(vec.begin());
+        std::vector<ValuePtr> lambda_args{args};
+        lambda_args[0] = Value::makeList(vec);
+        auto lambda = lambdaForm(lambda_args, env);
+        env.symbol_list["func"] =
+            std::dynamic_pointer_cast<LambdaValue>(lambda);
+    }
+
+    else {
+        throw LispError("Malformed define form: " + args[1]->toString());
+    }
     return std::make_shared<NilValue>();
+}
+
+ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
+                                 EvalEnv& env) {
+    // (lambda (x y z) (+ x y z))
+    if (args.size() < 2)
+        throw LispError("Too few operands: " + std::to_string(args.size()) +
+                        " < 2");
+    std::vector<std::string> params;
+    std::ranges::transform(args[0]->toVector(), std::back_inserter(params),
+                           [](ValuePtr v) { return v->toString(); });
+
+    std::vector<ValuePtr> body = args;
+    body.erase(body.begin());
+    return std::make_shared<LambdaValue>(params, body);
 }
 
 ValuePtr SpecialForm::quoteForm(const std::vector<ValuePtr>& args,
@@ -65,8 +98,5 @@ ValuePtr SpecialForm::orForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
 }
 
 const std::unordered_map<std::string, SpecialFormType*> SpecialForm::form_list{
-    {"define", defineForm},
-    {"quote", quoteForm},
-    {"if", ifForm},
-    {"and", andForm},
-    {"or", orForm}};
+    {"define", defineForm}, {"lambda", lambdaForm}, {"quote", quoteForm},
+    {"if", ifForm},         {"and", andForm},       {"or", orForm}};

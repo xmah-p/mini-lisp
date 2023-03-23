@@ -3,8 +3,8 @@
 
 #include <memory>
 #include <optional>
-#include <vector>
 #include <string>
+#include <vector>
 
 enum class ValueType {
     BOOLEAN,
@@ -30,9 +30,10 @@ protected:
 
 public:
     virtual ~Value() = 0;
-    std::vector<ValuePtr> toVector();  // parameter can be pair or list, nil in the end will be escaped
+    std::vector<ValuePtr> toVector();  // parameter can be pair or list, nil in
+                                       // the end will be escaped
     std::optional<std::string> asSymbol() const;  // return its name if symbol
-    std::optional<double> asNumber() const;    // return its value if number
+    std::optional<double> asNumber() const;       // return its value if number
     virtual std::string toString() const;
 
     static bool isNil(ValuePtr expr);
@@ -42,7 +43,9 @@ public:
     static bool isList(ValuePtr expr);
     static bool isProcedure(ValuePtr expr);
 
-    static ValuePtr makeList(std::vector<ValuePtr> lst);  // the parameter should not have nil in the end
+    static ValuePtr makeList(
+        std::vector<ValuePtr>
+            lst);  // the parameter should not have nil in the end
 
     // Value 是抽象类 不能使用 make_shared<Value>()
 };
@@ -72,8 +75,7 @@ private:
     std::string str;
 
 public:
-    StringValue(const std::string str)
-        : Value(ValueType::STRING), str{str} {}
+    StringValue(const std::string str) : Value(ValueType::STRING), str{str} {}
     std::string toString() const override;
     std::string getStr() const;
 };
@@ -103,8 +105,12 @@ private:
 public:
     PairValue(ValuePtr l_part, ValuePtr r_part)
         : Value(ValueType::PAIR), l_part{l_part}, r_part{r_part} {}
-    ValuePtr car() const { return l_part; }
-    ValuePtr cdr() const { return r_part; }
+    ValuePtr car() const {
+        return l_part;
+    }
+    ValuePtr cdr() const {
+        return r_part;
+    }
     std::string toString() const override;
 };
 
@@ -118,5 +124,17 @@ public:
     std::string toString() const override;
     BuiltinFuncType* getFunc() const;
 };
+
+class LambdaValue : public Value {
+private:
+    std::vector<std::string> params;
+    std::vector<ValuePtr> body;
+    // [...]
+public:
+    LambdaValue(std::vector<std::string> params, std::vector<ValuePtr> body)
+        : Value(ValueType::BUILTIN_PROC), params{params}, body{body} {}
+    std::string toString() const override;
+};
+
 
 #endif

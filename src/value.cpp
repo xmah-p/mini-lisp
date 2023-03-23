@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <memory>
 #include <sstream>
+#include <string>
 
 Value::~Value() {}
 
@@ -150,4 +151,8 @@ std::string BuiltinProcValue::toString() const {
 
 BuiltinFuncType* BuiltinProcValue::getFunc() const {
     return func;
+}
+
+std::string LambdaValue::toString() const {
+    return "#<procedure>";
 }
