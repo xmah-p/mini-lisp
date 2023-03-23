@@ -44,10 +44,11 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         std::vector<ValuePtr> vec = ls->toVector();
 
         if (auto name = vec[0]->asSymbol()) {
+            
             if (SpecialForm::form_list.find(*name) !=
                 SpecialForm::form_list.end()) {
                 auto form = SpecialForm::form_list.at(*name);
-                form(ls->cdr()->toVector(), *this);
+                return form(ls->cdr()->toVector(), *this);
             }
 
             else if (auto proc = symbol_list[*name]) {
@@ -61,10 +62,14 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
 
             else
                 throw LispError("Unbound variable " + *name);
-        }
+        } 
+        
+        else
+            throw LispError("Not a procedure: " + vec[0]->toString());
     }
 
     else if (auto name = expr->asSymbol()) {
+        
         if (auto value = symbol_list[*name])
             return value;
         else

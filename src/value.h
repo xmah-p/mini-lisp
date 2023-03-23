@@ -30,7 +30,7 @@ protected:
 
 public:
     virtual ~Value() = 0;
-    std::vector<ValuePtr> toVector();  // return vector storing the list
+    std::vector<ValuePtr> toVector();  // parameter can be pair or list, nil in the end will be escaped
     std::optional<std::string> asSymbol() const;  // return its name if symbol
     std::optional<double> asNumber() const;    // return its value if number
     virtual std::string toString() const;
@@ -42,7 +42,7 @@ public:
     static bool isList(ValuePtr expr);
     static bool isProcedure(ValuePtr expr);
 
-    static ValuePtr makeList(std::vector<ValuePtr> lst);
+    static ValuePtr makeList(std::vector<ValuePtr> lst);  // the parameter should not have nil in the end
 
     // Value 是抽象类 不能使用 make_shared<Value>()
 };
