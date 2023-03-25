@@ -1,4 +1,5 @@
 #include "./value.h"
+#include "./eval_env.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -151,6 +152,14 @@ std::string BuiltinProcValue::toString() const {
 
 BuiltinFuncType* BuiltinProcValue::getFunc() const {
     return func;
+}
+
+ValuePtr LambdaValue::apply(const std::vector<ValuePtr>& args) {
+    auto env = this->envPtr->EvalEnv::createChild(this->params, args);
+    for (unsigned int i = 0; i < this->body.size() - 1; ++i) {
+        env->eval(this->body[i]);
+    }
+    return env->eval(this->body.back());
 }
 
 std::string LambdaValue::toString() const {
