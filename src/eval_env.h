@@ -9,10 +9,11 @@
 
 class EvalEnv {
 public:
+    EvalEnv();
     ValuePtr eval(ValuePtr expr);
     std::vector<ValuePtr> evalList(ValuePtr ls);
     ValuePtr apply(ValuePtr proc, std::vector<ValuePtr> args);
-    static std::unordered_map<std::string, ValuePtr> symbol_list;
+    std::unordered_map<std::string, ValuePtr> symbol_list;
 };
 
 #endif

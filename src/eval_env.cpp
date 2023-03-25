@@ -11,7 +11,47 @@
 #include "./error.h"
 #include "./forms.h"
 
-std::unordered_map<std::string, ValuePtr> EvalEnv::symbol_list{};
+EvalEnv::EvalEnv() {
+    using namespace Builtins;
+
+    // calc
+    symbol_list["+"] = std::make_shared<BuiltinProcValue>(&add);
+    symbol_list["-"] = std::make_shared<BuiltinProcValue>(&subtract);
+    symbol_list["*"] = std::make_shared<BuiltinProcValue>(&multiply);
+    symbol_list["/"] = std::make_shared<BuiltinProcValue>(&divide);
+    symbol_list["abs"] = std::make_shared<BuiltinProcValue>(&Builtins::abs);
+
+    // pair and list
+    symbol_list["car"] = std::make_shared<BuiltinProcValue>(&car);
+    symbol_list["cdr"] = std::make_shared<BuiltinProcValue>(&cdr);
+
+    // type
+    symbol_list["atom?"] = std::make_shared<BuiltinProcValue>(&isAtom);
+    symbol_list["boolean?"] = std::make_shared<BuiltinProcValue>(&isBoolean);
+    symbol_list["integer?"] = std::make_shared<BuiltinProcValue>(&isInteger);
+    symbol_list["list?"] = std::make_shared<BuiltinProcValue>(&isList);
+    symbol_list["number?"] = std::make_shared<BuiltinProcValue>(&isNumber);
+    symbol_list["null?"] = std::make_shared<BuiltinProcValue>(&isNull);
+    symbol_list["pair?"] = std::make_shared<BuiltinProcValue>(&isPair);
+    symbol_list["procedure?"] =
+        std::make_shared<BuiltinProcValue>(&isProcedure);
+    symbol_list["string?"] = std::make_shared<BuiltinProcValue>(&isString);
+    symbol_list["symbol?"] = std::make_shared<BuiltinProcValue>(&isSymbol);
+
+    // core
+    symbol_list["display"] = std::make_shared<BuiltinProcValue>(&display);
+    symbol_list["newline"] = std::make_shared<BuiltinProcValue>(&newline);
+    symbol_list["print"] = std::make_shared<BuiltinProcValue>(&print);
+    symbol_list["exit"] = std::make_shared<BuiltinProcValue>(&Builtins::exit);
+
+    // comp
+    symbol_list["="] = std::make_shared<BuiltinProcValue>(&equalNum);
+    symbol_list[">"] = std::make_shared<BuiltinProcValue>(&greater);
+    symbol_list["<"] = std::make_shared<BuiltinProcValue>(&lesser);
+    symbol_list[">="] = std::make_shared<BuiltinProcValue>(&greaterOrEqual);
+    symbol_list["<="] = std::make_shared<BuiltinProcValue>(&lesserOrEqual);
+    symbol_list["zero?"] = std::make_shared<BuiltinProcValue>(&isZero);
+}
 
 std::vector<ValuePtr> EvalEnv::evalList(ValuePtr ls) {
     std::vector<ValuePtr> result;
@@ -30,8 +70,6 @@ ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {
     using namespace std::literals;
-
-    Builtins::initSymbolList();
 
     if (Value::isSelfEvaluating(expr))
         return expr;
@@ -62,14 +100,13 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
 
             else
                 throw LispError("Unbound variable " + *name);
-        } 
-        
+        }
+
         else
             throw LispError("Not a procedure: " + vec[0]->toString());
     }
 
     else if (auto name = expr->asSymbol()) {
-        
         if (auto value = symbol_list[*name])
             return value;
         else

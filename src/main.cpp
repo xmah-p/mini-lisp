@@ -18,7 +18,7 @@ int main() {
             auto tokens = Tokenizer::tokenize(line);
             Parser parser(std::move(tokens));
             auto value = parser.parse();
-            EvalEnv env;
+            static EvalEnv env;
             auto result = env.eval(std::move(value));
             std::cout << result->toString() << std::endl;
         } catch (std::runtime_error& e) {

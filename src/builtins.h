@@ -6,49 +6,43 @@
 
 #include "./value.h"
 
-class Builtins {
-    friend class BuiltinProcValue;
+namespace Builtins {
+// calc
+ValuePtr add(const std::vector<ValuePtr>& params);
+ValuePtr subtract(const std::vector<ValuePtr>& params);
+ValuePtr multiply(const std::vector<ValuePtr>& params);
+ValuePtr divide(const std::vector<ValuePtr>& params);
+ValuePtr abs(const std::vector<ValuePtr>& params);
 
-private:
-    // calc
-    static ValuePtr add(const std::vector<ValuePtr>& params);
-    static ValuePtr subtract(const std::vector<ValuePtr>& params);
-    static ValuePtr multiply(const std::vector<ValuePtr>& params);
-    static ValuePtr divide(const std::vector<ValuePtr>& params);
-    static ValuePtr abs(const std::vector<ValuePtr>& params);
+// pair and list
+ValuePtr car(const std::vector<ValuePtr>& params);
+ValuePtr cdr(const std::vector<ValuePtr>& params);
 
-    // pair and list
-    static ValuePtr car(const std::vector<ValuePtr>& params);
-    static ValuePtr cdr(const std::vector<ValuePtr>& params);
+// type
+ValuePtr isAtom(const std::vector<ValuePtr>& params);
+ValuePtr isBoolean(const std::vector<ValuePtr>& params);
+ValuePtr isInteger(const std::vector<ValuePtr>& params);
+ValuePtr isList(const std::vector<ValuePtr>& params);
+ValuePtr isNumber(const std::vector<ValuePtr>& params);
+ValuePtr isNull(const std::vector<ValuePtr>& params);
+ValuePtr isPair(const std::vector<ValuePtr>& params);
+ValuePtr isProcedure(const std::vector<ValuePtr>& params);
+ValuePtr isString(const std::vector<ValuePtr>& params);
+ValuePtr isSymbol(const std::vector<ValuePtr>& params);
 
-    // type
-    static ValuePtr isAtom(const std::vector<ValuePtr>& params);
-    static ValuePtr isBoolean(const std::vector<ValuePtr>& params);
-    static ValuePtr isInteger(const std::vector<ValuePtr>& params);
-    static ValuePtr isList(const std::vector<ValuePtr>& params);
-    static ValuePtr isNumber(const std::vector<ValuePtr>& params);
-    static ValuePtr isNull(const std::vector<ValuePtr>& params);
-    static ValuePtr isPair(const std::vector<ValuePtr>& params);
-    static ValuePtr isProcedure(const std::vector<ValuePtr>& params);
-    static ValuePtr isString(const std::vector<ValuePtr>& params);
-    static ValuePtr isSymbol(const std::vector<ValuePtr>& params);
+// core
+ValuePtr display(const std::vector<ValuePtr>& params);
+ValuePtr newline(const std::vector<ValuePtr>& params);
+ValuePtr print(const std::vector<ValuePtr>& params);
+ValuePtr exit(const std::vector<ValuePtr>& params);
 
-    // core
-    static ValuePtr display(const std::vector<ValuePtr>& params);
-    static ValuePtr newline(const std::vector<ValuePtr>& params);
-    static ValuePtr print(const std::vector<ValuePtr>& params);
-    static ValuePtr exit(const std::vector<ValuePtr>& params);
-
-    // comp
-    static ValuePtr greater(const std::vector<ValuePtr>& params);
-    static ValuePtr lesser(const std::vector<ValuePtr>& params);
-    static ValuePtr equalNum(const std::vector<ValuePtr>& params);
-    static ValuePtr greaterOrEqual(const std::vector<ValuePtr>& params);
-    static ValuePtr lesserOrEqual(const std::vector<ValuePtr>& params);
-    static ValuePtr isZero(const std::vector<ValuePtr>& params);
-
-public:
-    static void initSymbolList();
-};
+// comp
+ValuePtr greater(const std::vector<ValuePtr>& params);
+ValuePtr lesser(const std::vector<ValuePtr>& params);
+ValuePtr equalNum(const std::vector<ValuePtr>& params);
+ValuePtr greaterOrEqual(const std::vector<ValuePtr>& params);
+ValuePtr lesserOrEqual(const std::vector<ValuePtr>& params);
+ValuePtr isZero(const std::vector<ValuePtr>& params);
+};  // namespace Builtins
 
 #endif

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "./error.h"
-#include "./eval_env.h"
 
 // calc
 
@@ -309,53 +308,4 @@ ValuePtr Builtins::isZero(const std::vector<ValuePtr>& params) {
         throw LispError("Too many arguments: " + std::to_string(params.size()) +
                         " > 1");
     return equalNum({params[0], std::make_shared<NumericValue>(0)});
-}
-
-void Builtins::initSymbolList() {
-    // calc
-    EvalEnv::symbol_list["+"] = std::make_shared<BuiltinProcValue>(&add);
-    EvalEnv::symbol_list["-"] = std::make_shared<BuiltinProcValue>(&subtract);
-    EvalEnv::symbol_list["*"] = std::make_shared<BuiltinProcValue>(&multiply);
-    EvalEnv::symbol_list["/"] = std::make_shared<BuiltinProcValue>(&divide);
-    EvalEnv::symbol_list["abs"] = std::make_shared<BuiltinProcValue>(&abs);
-
-    // pair and list
-    EvalEnv::symbol_list["car"] = std::make_shared<BuiltinProcValue>(&car);
-    EvalEnv::symbol_list["cdr"] = std::make_shared<BuiltinProcValue>(&cdr);
-
-    // type
-    EvalEnv::symbol_list["atom?"] = std::make_shared<BuiltinProcValue>(&isAtom);
-    EvalEnv::symbol_list["boolean?"] =
-        std::make_shared<BuiltinProcValue>(&isBoolean);
-    EvalEnv::symbol_list["integer?"] =
-        std::make_shared<BuiltinProcValue>(&isInteger);
-    EvalEnv::symbol_list["list?"] = std::make_shared<BuiltinProcValue>(&isList);
-    EvalEnv::symbol_list["number?"] =
-        std::make_shared<BuiltinProcValue>(&isNumber);
-    EvalEnv::symbol_list["null?"] = std::make_shared<BuiltinProcValue>(&isNull);
-    EvalEnv::symbol_list["pair?"] = std::make_shared<BuiltinProcValue>(&isPair);
-    EvalEnv::symbol_list["procedure?"] =
-        std::make_shared<BuiltinProcValue>(&isProcedure);
-    EvalEnv::symbol_list["string?"] =
-        std::make_shared<BuiltinProcValue>(&isString);
-    EvalEnv::symbol_list["symbol?"] =
-        std::make_shared<BuiltinProcValue>(&isSymbol);
-
-    // core
-    EvalEnv::symbol_list["display"] =
-        std::make_shared<BuiltinProcValue>(&display);
-    EvalEnv::symbol_list["newline"] =
-        std::make_shared<BuiltinProcValue>(&newline);
-    EvalEnv::symbol_list["print"] = std::make_shared<BuiltinProcValue>(&print);
-    EvalEnv::symbol_list["exit"] = std::make_shared<BuiltinProcValue>(&exit);
-
-    // comp
-    EvalEnv::symbol_list["="] = std::make_shared<BuiltinProcValue>(&equalNum);
-    EvalEnv::symbol_list[">"] = std::make_shared<BuiltinProcValue>(&greater);
-    EvalEnv::symbol_list["<"] = std::make_shared<BuiltinProcValue>(&lesser);
-    EvalEnv::symbol_list[">="] =
-        std::make_shared<BuiltinProcValue>(&greaterOrEqual);
-    EvalEnv::symbol_list["<="] =
-        std::make_shared<BuiltinProcValue>(&lesserOrEqual);
-    EvalEnv::symbol_list["zero?"] = std::make_shared<BuiltinProcValue>(&isZero);
 }

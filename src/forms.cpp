@@ -8,6 +8,7 @@
 
 #include "./error.h"
 
+
 bool SpecialForm::isVirtual(ValuePtr expr) {
     if (auto cond = std::dynamic_pointer_cast<BooleanValue>(expr))
         if (!cond->getBool()) return true;
@@ -16,25 +17,22 @@ bool SpecialForm::isVirtual(ValuePtr expr) {
 
 ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
                                  EvalEnv& env) {
-    if (args.size() > 2)
-        throw LispError("Too many operands: " + std::to_string(args.size()) +
-                        " > 2");
     if (args.size() < 2)
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 2");
 
     // (define (double x) (+ x x) x)  <=>  (define double (lambda (x) (+ x x)))
     if (auto name = args[0]->asSymbol())
-        EvalEnv::symbol_list[*name] = env.eval(args[1]);
+        env.symbol_list[*name] = env.eval(args[1]);
 
     else if (Value::isList(args[0])) {
         auto vec = args[0]->toVector();
-        auto func = vec[0];
+        auto func = vec[0]->asSymbol();
         vec.erase(vec.begin());
         std::vector<ValuePtr> lambda_args{args};
         lambda_args[0] = Value::makeList(vec);
         auto lambda = lambdaForm(lambda_args, env);
-        env.symbol_list["func"] =
+        env.symbol_list[*func] =
             std::dynamic_pointer_cast<LambdaValue>(lambda);
     }
 
