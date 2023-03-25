@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+class EvalEnv;
+
 enum class ValueType {
     BOOLEAN,
     NUMERIC,
@@ -129,12 +131,18 @@ class LambdaValue : public Value {
 private:
     std::vector<std::string> params;
     std::vector<ValuePtr> body;
-    // [...]
+    std::shared_ptr<EvalEnv> envPtr;
+
 public:
-    LambdaValue(std::vector<std::string> params, std::vector<ValuePtr> body)
-        : Value(ValueType::BUILTIN_PROC), params{params}, body{body} {}
+    LambdaValue(std::vector<std::string> params, std::vector<ValuePtr> body,
+                std::shared_ptr<EvalEnv> envPtr)
+        : Value(ValueType::BUILTIN_PROC),
+          params{params},
+          body{body},
+          envPtr{envPtr} {}
+
+    ValuePtr apply(const std::vector<ValuePtr>& args);
     std::string toString() const override;
 };
-
 
 #endif

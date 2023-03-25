@@ -1,10 +1,11 @@
 #include <iostream>
 #include <string>
 
+#include "./eval_env.h"
+#include "./parser.h"
 #include "./tokenizer.h"
 #include "./value.h"
-#include "./parser.h"
-#include "./eval_env.h"
+
 
 int main() {
     while (true) {
@@ -18,8 +19,8 @@ int main() {
             auto tokens = Tokenizer::tokenize(line);
             Parser parser(std::move(tokens));
             auto value = parser.parse();
-            static EvalEnv env;
-            auto result = env.eval(std::move(value));
+            static auto env = EvalEnv::createGlobal();
+            auto result = env->eval(std::move(value));
             std::cout << result->toString() << std::endl;
         } catch (std::runtime_error& e) {
             std::cerr << "Error: " << e.what() << std::endl;

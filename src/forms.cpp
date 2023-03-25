@@ -44,7 +44,7 @@ ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
 
 ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
                                  EvalEnv& env) {
-    // (lambda (x y z) (+ x y z))
+    // (lambda (a b) ( (if (> b 0) + -) a b)
     if (args.size() < 2)
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 2");
@@ -54,7 +54,7 @@ ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
 
     std::vector<ValuePtr> body = args;
     body.erase(body.begin());
-    return std::make_shared<LambdaValue>(params, body);
+    return std::make_shared<LambdaValue>(params, body, env.shared_from_this());
 }
 
 ValuePtr SpecialForm::quoteForm(const std::vector<ValuePtr>& args,

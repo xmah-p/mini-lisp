@@ -14,6 +14,7 @@
 - [ ] static_cast<NUMERICLITERALTOKEN&>(*token)
 - [ ] std::optional
 - [ ] namespace string_literals
-- [ ] unique_ptr 和 shared_ptr 的管理细节
+- [ ] unique_ptr 和 shared_ptr 的管理细节 引用计数块
 - [ ] error
 - [ ] std::pmr::vector
+- [ ] std::enable_shared_from_this  CRTP, review lv.6.2

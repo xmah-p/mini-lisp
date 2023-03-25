@@ -4,6 +4,8 @@
 #include "./error.h"
 
 ValuePtr Parser::parse() {
+    if (this->tokens.empty()) throw SyntaxError("Unexpected EOF");
+
     auto token = std::move(this->tokens.front());
     tokens.pop_front();
 
@@ -50,7 +52,6 @@ ValuePtr Parser::parse() {
         return Value::makeList({unquote, value});
     }
 
-    throw SyntaxError("Unimplemented");
 }
 
 ValuePtr Parser::parseTails() {
