@@ -93,7 +93,7 @@ ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
     } else if (auto func = std::dynamic_pointer_cast<LambdaValue>(proc)) {
         return func->apply(args);
     } else
-        throw LispError("Not a procedure");
+        throw LispError("Not a procedure: " + proc->toString());
 }
 
 ValuePtr EvalEnv::lookupBinding(std::string name) const {
