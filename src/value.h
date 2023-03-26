@@ -32,10 +32,9 @@ protected:
 
 public:
     virtual ~Value() = 0;
-    std::vector<ValuePtr> toVector();  // parameter can be pair or list, nil in
-                                       // the end will be escaped
-    std::optional<std::string> asSymbol() const;  // return its name if symbol
-    std::optional<double> asNumber() const;       // return its value if number
+    std::vector<ValuePtr> toVector();
+    std::optional<std::string> asSymbol() const;
+    std::optional<double> asNumber() const;
     virtual std::string toString() const;
 
     static bool isNil(ValuePtr expr);
@@ -47,7 +46,7 @@ public:
 
     static ValuePtr makeList(
         std::vector<ValuePtr>
-            lst);  // the parameter should not have nil in the end
+            lst);  // parameter should not have nil in the end
 
     // Value 是抽象类 不能使用 make_shared<Value>()
 };

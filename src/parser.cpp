@@ -4,7 +4,7 @@
 #include "./error.h"
 
 ValuePtr Parser::parse() {
-    if (this->tokens.empty()) throw SyntaxError("Unexpected EOF");
+    if (this->tokens.empty()) throw SyntaxError("Unexpected end of file");
 
     auto token = std::move(this->tokens.front());
     tokens.pop_front();
@@ -52,24 +52,26 @@ ValuePtr Parser::parse() {
         return Value::makeList({unquote, value});
     }
 
+    throw SyntaxError("Unsupported syntax");
 }
 
 ValuePtr Parser::parseTails() {
     if (tokens.size() == 0)
-        throw SyntaxError("Unexpected EOF");
+        throw SyntaxError("Unexpected end of file");
 
     if (tokens.front()->getType() == TokenType::RIGHT_PAREN) {
         tokens.pop_front();
         return std::make_shared<NilValue>();
     }
     auto car = parse();
-    if (tokens.size() == 0) throw SyntaxError("Unexpected EOF");
+    if (tokens.size() == 0) throw SyntaxError("Unexpected end of file");
     if (tokens.front()->getType() == TokenType::DOT) {
         tokens.pop_front();
-        if (tokens.size() == 0) throw SyntaxError("Unexpected EOF");
+        if (tokens.size() == 0) throw SyntaxError("Unexpected end of file");
         auto cdr = parse();
+        if (tokens.size() == 0) throw SyntaxError("Unexpected end of file");
         if (tokens.front()->getType() != TokenType::RIGHT_PAREN) {
-            throw SyntaxError("Unexpected EOF; expect an element after .");
+            throw SyntaxError("Expected exactly one element after .");
         }
         tokens.pop_front();
         return std::make_shared<PairValue>(car, cdr);

@@ -1,8 +1,9 @@
-# optional
 
 - [ ] 舍弃 NumericValue 的外部表示中尾部 0。
 - [x] EvalEnv::eval 中令 define 抛出操作数过多异常
 - [x] exit() 函数是特判
+- [x] 非ascii输入 （使用gcc kit）
+- [x] (1 . 2 . 3)
 
 
 # learn

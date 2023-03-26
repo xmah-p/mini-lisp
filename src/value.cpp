@@ -7,6 +7,8 @@
 #include <sstream>
 #include <string>
 
+class EvalEnv;
+
 Value::~Value() {}
 
 std::vector<ValuePtr> Value::toVector() {

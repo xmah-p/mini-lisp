@@ -92,7 +92,8 @@ ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
         return func->getFunc()(args);
     } else if (auto func = std::dynamic_pointer_cast<LambdaValue>(proc)) {
         return func->apply(args);
-    } else throw LispError("Fail to apply");
+    } else
+        throw LispError("Not a procedure");
 }
 
 ValuePtr EvalEnv::lookupBinding(std::string name) const {
@@ -114,12 +115,15 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
     else if (Value::isNil(expr))
         throw LispError("Evaluating nil is prohibited.");
 
+    else if (auto name = expr->asSymbol()) {
+        return lookupBinding(*name);
+    }
+
     else if (Value::isList(expr)) {
         auto ls = dynamic_pointer_cast<PairValue>(expr);
         std::vector<ValuePtr> vec = ls->toVector();
 
-        if (Value::isList(vec[0])) 
-            vec[0] = eval(vec[0]);
+        if (Value::isList(vec[0])) vec[0] = eval(vec[0]);
 
         if (auto name = vec[0]->asSymbol()) {
             if (SpecialForm::form_list.find(*name) !=
@@ -127,7 +131,6 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
                 auto form = SpecialForm::form_list.at(*name);
                 return form(ls->cdr()->toVector(), *this);
             }
-
             else {
                 auto proc = lookupBinding(*name);
                 std::vector<ValuePtr> args;
@@ -137,30 +140,23 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
                     args.push_back(eval(ls->cdr()));
                 return apply(proc, args);
             }
-        } 
-        // ((return a lambda) x y)     // change asSymbol to asProc?
-        else if (dynamic_pointer_cast<LambdaValue>(vec[0]) || dynamic_pointer_cast<BuiltinProcValue>(vec[0])) {
-                std::vector<ValuePtr> args;
-                if (Value::isList(ls->cdr()))
-                    args = evalList(ls->cdr());
-                else
-                    args.push_back(eval(ls->cdr()));
-                return apply(vec[0], args);     
         }
-
+        else if (dynamic_pointer_cast<LambdaValue>(vec[0]) ||
+                 dynamic_pointer_cast<BuiltinProcValue>(vec[0])) {
+            std::vector<ValuePtr> args;
+            if (Value::isList(ls->cdr()))
+                args = evalList(ls->cdr());
+            else
+                args.push_back(eval(ls->cdr()));
+            return apply(vec[0], args);
+        }
         else
             throw LispError("Not a procedure: " + vec[0]->toString());
     }
 
-    else if (auto name = expr->asSymbol()) {
-        return lookupBinding(*name);
-    }
+    else if (Value::isPair(expr))
+        throw LispError("Malformed list: " + expr->toString());
 
     else
-        throw LispError("Unknown expression.");
-
-    return std::make_shared<NilValue>();
+        throw LispError("Unknown expression: " + expr->toString());
 }
-
-
-// (define (a-plus-abs-b a b) ( (if (> b 0) + -) a b) )
