@@ -8,7 +8,7 @@
 #include "./value.h"
 
 class EvalEnv : public std::enable_shared_from_this<EvalEnv> {
-public:
+private:
     EvalEnv() = default;
     EvalEnv(std::shared_ptr<EvalEnv> parent) : parent{parent} {}
     EvalEnv(const EvalEnv& env) : parent{env.parent}, symbol_list{env.symbol_list} {}

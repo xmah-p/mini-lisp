@@ -44,7 +44,7 @@ ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
 
 ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
                                  EvalEnv& env) {
-    // (lambda (a b) ( (if (> b 0) + -) a b)
+    // (lambda (a b) ( (if (> b 0) + -) a b))
     if (args.size() < 2)
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 2");

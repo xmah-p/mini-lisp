@@ -12,7 +12,8 @@
 #include "./forms.h"
 
 std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
-    auto global = std::make_shared<EvalEnv>();
+    
+    auto global = std::shared_ptr<EvalEnv>(new EvalEnv());
 
     using namespace Builtins;
 
@@ -70,7 +71,7 @@ std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
 
 std::shared_ptr<EvalEnv> EvalEnv::createChild(
     const std::vector<std::string>& params, const std::vector<ValuePtr>& args) {
-    auto child = std::make_shared<EvalEnv>(this->shared_from_this());
+    auto child = std::shared_ptr<EvalEnv>(this->shared_from_this());
     if (params.size() != args.size())
         throw LispError("Procedure expected " + std::to_string(params.size()) +
                         " parameters, got " + std::to_string(args.size()));
