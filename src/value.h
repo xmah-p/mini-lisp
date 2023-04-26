@@ -1,11 +1,11 @@
 #ifndef VALUE_H
 #define VALUE_H
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-#include <functional>
 
 class EvalEnv;
 
@@ -33,7 +33,8 @@ protected:
 
 public:
     virtual ~Value() = 0;
-    std::vector<ValuePtr> toVector();    // returns a vector storing all the elements in the list
+    std::vector<ValuePtr>
+    toVector();  // returns a vector storing all the elements in the list
     std::optional<std::string> asSymbol() const;
     std::optional<double> asNumber() const;
     virtual std::string toString() const;
@@ -45,9 +46,8 @@ public:
     static bool isList(ValuePtr expr);
     static bool isProcedure(ValuePtr expr);
 
-    static ValuePtr makeList(
-        std::vector<ValuePtr> lst);  // parameter should not have nil in the end
-
+    static ValuePtr makeList(std::vector<ValuePtr>& lst);
+    static ValuePtr makeList(std::vector<ValuePtr>&& lst);
 };
 
 class BooleanValue : public Value {

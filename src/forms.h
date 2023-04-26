@@ -11,13 +11,14 @@ using SpecialFormType = ValuePtr(const std::vector<ValuePtr>&, EvalEnv&);
 class SpecialForm {
 private:
     static bool isVirtual(ValuePtr expr);
-
-    static ValuePtr defineForm(const std::vector<ValuePtr>& args, EvalEnv& env);
-    static ValuePtr lambdaForm(const std::vector<ValuePtr>& args, EvalEnv& env);
-    static ValuePtr quoteForm(const std::vector<ValuePtr>& args, EvalEnv& env);
-    static ValuePtr ifForm(const std::vector<ValuePtr>& args, EvalEnv& env);
-    static ValuePtr andForm(const std::vector<ValuePtr>& args, EvalEnv& env);
-    static ValuePtr orForm(const std::vector<ValuePtr>& args, EvalEnv& env);
+    static SpecialFormType defineForm;
+    static SpecialFormType lambdaForm;
+    static SpecialFormType quoteForm;
+    static SpecialFormType ifForm;
+    static SpecialFormType andForm;
+    static SpecialFormType orForm;
+    static SpecialFormType beginForm;
+    static SpecialFormType letForm;
 
 public:
     static const std::unordered_map<std::string, SpecialFormType*> form_list;

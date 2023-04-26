@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,8 @@ ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 2");
 
-    // (define (double x) (+ x x) x)  <=>  (define double (lambda (x) (+ x x)))
+    // (define (double x) (+ x x) x)  <=>  (define double (lambda (x) (+ x x)
+    // x))
     if (auto name = args[0]->asSymbol()) {
         if (args.size() > 2)
             throw LispError(
@@ -51,11 +53,16 @@ ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 2");
     std::vector<std::string> params;
-    std::ranges::transform(args[0]->toVector(), std::back_inserter(params),
-                           [](ValuePtr v) { return v->toString(); });
+    std::ranges::transform(
+        args[0]->toVector(), std::back_inserter(params), [](ValuePtr v) {
+            return v->asSymbol() == std::nullopt
+                       ? throw LispError(
+                             "Expect symbol in Lambda parameter, found " +
+                             v->toString())
+                       : *v->asSymbol();
+        });
 
-    std::vector<ValuePtr> body = args;
-    body.erase(body.begin());
+    std::vector<ValuePtr> body(args.begin() + 1, args.end());
     return std::make_shared<LambdaValue>(params, body, env.shared_from_this());
 }
 
@@ -88,8 +95,8 @@ ValuePtr SpecialForm::andForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
 
 ValuePtr SpecialForm::orForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     if (!args.empty()) {
-        for (auto& i : args) {
-            auto val = env.eval(i);
+        for (auto& arg : args) {
+            auto val = env.eval(arg);
             if (isVirtual(val)) continue;
             return val;
         }
@@ -97,6 +104,56 @@ ValuePtr SpecialForm::orForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     return std::make_shared<BooleanValue>(false);
 }
 
+ValuePtr SpecialForm::beginForm(const std::vector<ValuePtr>& args,
+                                EvalEnv& env) {
+    if (args.size() < 1)
+        throw LispError("Too few operands: " + std::to_string(args.size()) +
+                        " < 1");
+    for (unsigned int i = 0; i != args.size(); ++i) {
+        auto val = env.eval(args[i]);
+        if (i == args.size() - 1) return env.eval(args[i]);
+    }
+    return std::make_shared<NilValue>();
+}
+
+ValuePtr SpecialForm::letForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
+    // (let( (x 42)(y 56) ) (+ x y) x)
+    // is equal to
+    // ((lambda (x y) (+ x y) x) 42 56)
+    if (args.size() < 2)
+        throw LispError("Too few operands: " + std::to_string(args.size()) +
+                        " < 2");
+    if (!Value::isList(args[0]))
+        throw LispError("Malformed list: expected pair or nil, got " +
+                        args[0]->toString());
+    auto param_list = args[0]->toVector();
+    std::vector<std::string> names;
+    std::vector<ValuePtr> values;
+    for (auto& bind : param_list) {
+        if (!Value::isList(bind))
+            throw LispError("Malformed list: expected pair or nil, got " +
+                            bind->toString());
+        auto vec = bind->toVector();
+        if (vec.size() < 2)
+            throw LispError("Too few operands: " + std::to_string(vec.size()) +
+                            " < 2");
+        if (vec.size() > 2)
+            throw LispError("Too many operands: " + std::to_string(vec.size()) +
+                            " > 2");
+        names.push_back(
+            vec[0]->asSymbol() == std::nullopt
+                ? throw LispError("Expected let binding name, got " +
+                                  vec[0]->toString())
+                : *vec[0]->asSymbol());
+        values.push_back(vec[1]);
+    }
+    std::vector<ValuePtr> body(args.begin() + 1, args.end());
+    auto lambda =
+        std::make_shared<LambdaValue>(names, body, env.shared_from_this());
+    return lambda->apply(values);
+}
+
 const std::unordered_map<std::string, SpecialFormType*> SpecialForm::form_list{
     {"define", defineForm}, {"lambda", lambdaForm}, {"quote", quoteForm},
-    {"if", ifForm},         {"and", andForm},       {"or", orForm}};
+    {"if", ifForm},         {"and", andForm},       {"or", orForm},
+    {"begin", beginForm},   {"let", letForm}};
