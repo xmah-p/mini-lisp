@@ -1,6 +1,7 @@
 #include "./eval_env.h"
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -17,54 +18,80 @@ std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
 
     using namespace Builtins;
 
+    auto apply = [&global](const std::vector<ValuePtr>& params) {
+        if (params.size() > 2)
+            throw LispError("Too many arguments: " +
+                            std::to_string(params.size()) + " > 2");
+        if (params.size() < 2)
+            throw LispError("Too few arguments: " +
+                            std::to_string(params.size()) + " < 2");
+        if (Value::isList(params[1]) == false) 
+            throw LispError("Not a list: " + params[1]->toString());
+        return global->apply(params[0], global->evalList(params[1]));
+    };
+
+    auto eval = [&global](const std::vector<ValuePtr>& params) {
+        if (params.size() > 1)
+            throw LispError("Too many arguments: " +
+                            std::to_string(params.size()) + " > 1");
+        if (params.size() < 1)
+            throw LispError(
+                "Too few arguments: " + std::to_string(params.size()) + " < 1");
+        return global->eval(params[0]);
+    };
+
     // calc
-    global->symbol_list["+"] = std::make_shared<BuiltinProcValue>(&add);
-    global->symbol_list["-"] = std::make_shared<BuiltinProcValue>(&subtract);
-    global->symbol_list["*"] = std::make_shared<BuiltinProcValue>(&multiply);
-    global->symbol_list["/"] = std::make_shared<BuiltinProcValue>(&divide);
+    global->symbol_list["+"] = std::make_shared<BuiltinProcValue>(add);
+    global->symbol_list["-"] = std::make_shared<BuiltinProcValue>(subtract);
+    global->symbol_list["*"] = std::make_shared<BuiltinProcValue>(multiply);
+    global->symbol_list["/"] = std::make_shared<BuiltinProcValue>(divide);
     global->symbol_list["abs"] =
-        std::make_shared<BuiltinProcValue>(&Builtins::abs);
+        std::make_shared<BuiltinProcValue>(Builtins::abs);
 
     // pair and list
-    global->symbol_list["car"] = std::make_shared<BuiltinProcValue>(&car);
-    global->symbol_list["cdr"] = std::make_shared<BuiltinProcValue>(&cdr);
+    global->symbol_list["car"] = std::make_shared<BuiltinProcValue>(car);
+    global->symbol_list["cdr"] = std::make_shared<BuiltinProcValue>(cdr);
 
     // type
-    global->symbol_list["atom?"] = std::make_shared<BuiltinProcValue>(&isAtom);
+    global->symbol_list["atom?"] = std::make_shared<BuiltinProcValue>(isAtom);
     global->symbol_list["boolean?"] =
-        std::make_shared<BuiltinProcValue>(&isBoolean);
+        std::make_shared<BuiltinProcValue>(isBoolean);
     global->symbol_list["integer?"] =
-        std::make_shared<BuiltinProcValue>(&isInteger);
-    global->symbol_list["list?"] = std::make_shared<BuiltinProcValue>(&isList);
+        std::make_shared<BuiltinProcValue>(isInteger);
+    global->symbol_list["list?"] = std::make_shared<BuiltinProcValue>(isList);
     global->symbol_list["number?"] =
-        std::make_shared<BuiltinProcValue>(&isNumber);
-    global->symbol_list["null?"] = std::make_shared<BuiltinProcValue>(&isNull);
-    global->symbol_list["pair?"] = std::make_shared<BuiltinProcValue>(&isPair);
+        std::make_shared<BuiltinProcValue>(isNumber);
+    global->symbol_list["null?"] = std::make_shared<BuiltinProcValue>(isNull);
+    global->symbol_list["pair?"] = std::make_shared<BuiltinProcValue>(isPair);
     global->symbol_list["procedure?"] =
-        std::make_shared<BuiltinProcValue>(&isProcedure);
+        std::make_shared<BuiltinProcValue>(isProcedure);
     global->symbol_list["string?"] =
-        std::make_shared<BuiltinProcValue>(&isString);
+        std::make_shared<BuiltinProcValue>(isString);
     global->symbol_list["symbol?"] =
-        std::make_shared<BuiltinProcValue>(&isSymbol);
+        std::make_shared<BuiltinProcValue>(isSymbol);
 
     // core
+    global->symbol_list["apply"] =
+        std::make_shared<BuiltinProcValue>(apply);
+    global->symbol_list["eval"] =
+        std::make_shared<BuiltinProcValue>(eval);
     global->symbol_list["display"] =
-        std::make_shared<BuiltinProcValue>(&display);
+        std::make_shared<BuiltinProcValue>(display);
     global->symbol_list["newline"] =
-        std::make_shared<BuiltinProcValue>(&newline);
-    global->symbol_list["print"] = std::make_shared<BuiltinProcValue>(&print);
+        std::make_shared<BuiltinProcValue>(newline);
+    global->symbol_list["print"] = std::make_shared<BuiltinProcValue>(print);
     global->symbol_list["exit"] =
-        std::make_shared<BuiltinProcValue>(&Builtins::exit);
+        std::make_shared<BuiltinProcValue>(Builtins::exit);
 
     // comp
-    global->symbol_list["="] = std::make_shared<BuiltinProcValue>(&equalNum);
-    global->symbol_list[">"] = std::make_shared<BuiltinProcValue>(&greater);
-    global->symbol_list["<"] = std::make_shared<BuiltinProcValue>(&lesser);
+    global->symbol_list["="] = std::make_shared<BuiltinProcValue>(equalNum);
+    global->symbol_list[">"] = std::make_shared<BuiltinProcValue>(greater);
+    global->symbol_list["<"] = std::make_shared<BuiltinProcValue>(lesser);
     global->symbol_list[">="] =
-        std::make_shared<BuiltinProcValue>(&greaterOrEqual);
+        std::make_shared<BuiltinProcValue>(greaterOrEqual);
     global->symbol_list["<="] =
-        std::make_shared<BuiltinProcValue>(&lesserOrEqual);
-    global->symbol_list["zero?"] = std::make_shared<BuiltinProcValue>(&isZero);
+        std::make_shared<BuiltinProcValue>(lesserOrEqual);
+    global->symbol_list["zero?"] = std::make_shared<BuiltinProcValue>(isZero);
 
     return global;
 }
@@ -129,6 +156,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         if (auto name = vec[0]->asSymbol()) {
             if (SpecialForm::form_list.find(*name) !=
                 SpecialForm::form_list.end()) {
+                // don't eval arguments here, eval them inside special forms
                 auto form = SpecialForm::form_list.at(*name);
                 return form(ls->cdr()->toVector(), *this);
             }

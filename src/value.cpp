@@ -152,7 +152,7 @@ std::string BuiltinProcValue::toString() const {
     return "#<procedure>";
 }
 
-BuiltinFuncType* BuiltinProcValue::getFunc() const {
+std::function<BuiltinFuncType> BuiltinProcValue::getFunc() const {
     return func;
 }
 

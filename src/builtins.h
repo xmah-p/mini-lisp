@@ -1,6 +1,7 @@
 #ifndef BUILTINS_H
 #define BUILTINS_H
 
+#include <functional>
 #include <unordered_map>
 #include <vector>
 
@@ -31,6 +32,8 @@ ValuePtr isString(const std::vector<ValuePtr>& params);
 ValuePtr isSymbol(const std::vector<ValuePtr>& params);
 
 // core
+// std::function<BuiltinFuncType> apply;  // apply and eval are defined
+// std::function<BuiltinFuncType> eval;   // as lambda expr in eval_env.cpp
 ValuePtr display(const std::vector<ValuePtr>& params);
 ValuePtr newline(const std::vector<ValuePtr>& params);
 ValuePtr print(const std::vector<ValuePtr>& params);

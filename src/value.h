@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <functional>
 
 class EvalEnv;
 
@@ -32,7 +33,7 @@ protected:
 
 public:
     virtual ~Value() = 0;
-    std::vector<ValuePtr> toVector();
+    std::vector<ValuePtr> toVector();    // returns a vector storing all the elements in the list
     std::optional<std::string> asSymbol() const;
     std::optional<double> asNumber() const;
     virtual std::string toString() const;
@@ -45,10 +46,8 @@ public:
     static bool isProcedure(ValuePtr expr);
 
     static ValuePtr makeList(
-        std::vector<ValuePtr>
-            lst);  // parameter should not have nil in the end
+        std::vector<ValuePtr> lst);  // parameter should not have nil in the end
 
-    // Value 是抽象类 不能使用 make_shared<Value>()
 };
 
 class BooleanValue : public Value {
@@ -117,13 +116,13 @@ public:
 
 class BuiltinProcValue : public Value {
 private:
-    BuiltinFuncType* func;
+    std::function<BuiltinFuncType> func;
 
 public:
-    BuiltinProcValue(BuiltinFuncType* func)
+    BuiltinProcValue(std::function<BuiltinFuncType> func)
         : Value(ValueType::BUILTIN_PROC), func{func} {}
     std::string toString() const override;
-    BuiltinFuncType* getFunc() const;
+    std::function<BuiltinFuncType> getFunc() const;
 };
 
 class LambdaValue : public Value {

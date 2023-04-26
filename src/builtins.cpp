@@ -1,5 +1,6 @@
 #include "./builtins.h"
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
