@@ -6,8 +6,10 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "./error.h"
+
 
 bool SpecialForm::isVirtual(ValuePtr expr) {
     if (auto cond = std::dynamic_pointer_cast<BooleanValue>(expr))
@@ -66,11 +68,6 @@ ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
     return std::make_shared<LambdaValue>(params, body, env.shared_from_this());
 }
 
-ValuePtr SpecialForm::quoteForm(const std::vector<ValuePtr>& args,
-                                EvalEnv& env) {
-    return args[0];
-}
-
 ValuePtr SpecialForm::ifForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     if (args.size() < 2)
         throw LispError("Too few operands: " + std::to_string(args.size()) +
@@ -84,7 +81,7 @@ ValuePtr SpecialForm::ifForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
 
 ValuePtr SpecialForm::andForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     if (!args.empty()) {
-        for (unsigned int i = 0; i != args.size(); ++i) {
+        for (size_t i = 0; i != args.size(); ++i) {
             auto val = env.eval(args[i]);
             if (isVirtual(val)) return std::make_shared<BooleanValue>(false);
             if (i == args.size() - 1) return val;
@@ -104,12 +101,37 @@ ValuePtr SpecialForm::orForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     return std::make_shared<BooleanValue>(false);
 }
 
+ValuePtr SpecialForm::condForm(const std::vector<ValuePtr>& args,
+                               EvalEnv& env) {
+    for (size_t i = 0; i != args.size(); ++i) {
+        if (!Value::isList(args[i]))
+            throw LispError("Malformed list: expected pair or nil, got " +
+                            args[i]->toString());
+        auto clause = args[i]->toVector();
+        ValuePtr cond;
+        if (clause[0]->toString() == "else") {
+            if (i != args.size() - 1)
+                throw LispError(
+                    "Bad syntax: else clause must appear at the end");
+            cond = std::make_shared<BooleanValue>(true);
+        } else
+            cond = env.eval(clause[0]);
+        if (isVirtual(cond)) continue;
+        if (clause.size() == 1) return cond;
+        for (size_t j = 1; j != clause.size(); ++j) {
+            if (j == clause.size() - 1) return env.eval(clause[j]);
+            env.eval(clause[j]);
+        }
+    }
+    return std::make_shared<NilValue>();
+}
+
 ValuePtr SpecialForm::beginForm(const std::vector<ValuePtr>& args,
                                 EvalEnv& env) {
     if (args.size() < 1)
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 1");
-    for (unsigned int i = 0; i != args.size(); ++i) {
+    for (size_t i = 0; i != args.size(); ++i) {
         auto val = env.eval(args[i]);
         if (i == args.size() - 1) return env.eval(args[i]);
     }
@@ -153,7 +175,33 @@ ValuePtr SpecialForm::letForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     return lambda->apply(values);
 }
 
+ValuePtr SpecialForm::quoteForm(const std::vector<ValuePtr>& args,
+                                EvalEnv& env) {
+    return args[0];
+}
+
+ValuePtr SpecialForm::quasiquoteForm(const std::vector<ValuePtr>& args,
+                                     EvalEnv& env) {
+    if (!Value::isList(args[0])) return args[0];
+    auto vec = args[0]->toVector();
+    for (auto& expr : vec) {
+        if (Value::isList(expr) &&
+            expr->toVector()[0]->asSymbol() == "unquote") {
+            expr = env.eval(expr->toVector()[1]);
+        }
+    }
+    return Value::makeList(vec);
+}
+
+ValuePtr SpecialForm::unquoteForm(const std::vector<ValuePtr>& args,
+                                  EvalEnv& env) {
+    return std::make_shared<NilValue>();
+}
+
 const std::unordered_map<std::string, SpecialFormType*> SpecialForm::form_list{
-    {"define", defineForm}, {"lambda", lambdaForm}, {"quote", quoteForm},
-    {"if", ifForm},         {"and", andForm},       {"or", orForm},
-    {"begin", beginForm},   {"let", letForm}};
+    {"define", defineForm},  {"lambda", lambdaForm},
+    {"quote", quoteForm},    {"if", ifForm},
+    {"and", andForm},        {"or", orForm},
+    {"begin", beginForm},    {"let", letForm},
+    {"cond", condForm},      {"quasiquote", quasiquoteForm},
+    {"unquote", unquoteForm}};

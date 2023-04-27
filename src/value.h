@@ -46,8 +46,7 @@ public:
     static bool isList(ValuePtr expr);
     static bool isProcedure(ValuePtr expr);
 
-    static ValuePtr makeList(std::vector<ValuePtr>& lst);
-    static ValuePtr makeList(std::vector<ValuePtr>&& lst);
+    static ValuePtr makeList(const std::vector<ValuePtr>& lst);
 };
 
 class BooleanValue : public Value {

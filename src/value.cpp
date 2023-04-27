@@ -135,22 +135,15 @@ std::string PairValue::toString() const {
     return res;
 }
 
-ValuePtr Value::makeList(std::vector<ValuePtr>& lst) {
-    std::reverse(lst.begin(), lst.end());
+ValuePtr Value::makeList(const std::vector<ValuePtr>& lst) {
     if (lst.size() == 1) {
         return std::make_shared<PairValue>(lst.front(),
                                            std::make_shared<NilValue>());
     } else {
-        auto car = lst.back();
-        lst.pop_back();
-        auto cdr = makeList(lst);
+        auto car = lst.front();
+        auto cdr = makeList({lst.begin() + 1, lst.end()});
         return std::make_shared<PairValue>(car, cdr);
     }
-}
-
-ValuePtr Value::makeList(std::vector<ValuePtr>&& lst) {
-    auto vec = lst;
-    return makeList(vec);
 }
 
 std::string BuiltinProcValue::toString() const {
