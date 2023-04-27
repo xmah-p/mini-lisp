@@ -23,9 +23,7 @@ public:
                                          const std::vector<ValuePtr>& args);
 
     ValuePtr eval(ValuePtr expr);
-    std::vector<ValuePtr> evalList(
-        ValuePtr
-            ls);  // returns a vector storing the eval results of elements in ls
+    std::vector<ValuePtr> evalList(ValuePtr ls);
     ValuePtr apply(ValuePtr proc, std::vector<ValuePtr> args);
     ValuePtr lookupBinding(std::string name) const;
 };

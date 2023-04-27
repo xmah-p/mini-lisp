@@ -4,22 +4,40 @@
 #include <functional>
 #include <unordered_map>
 #include <vector>
+#include <limits>
 
 #include "./value.h"
 
 namespace Builtins {
-// calc
+// helper functions
+void checkArgNum(const std::vector<ValuePtr>& params, std::size_t min,
+                 std::size_t max = std::numeric_limits<std::size_t>::max());
+std::vector<ValuePtr> vectorize(const ValuePtr& ls);
+std::vector<double> numericalize(const std::vector<ValuePtr>& vals);
+
+// calc 9
 BuiltinFuncType add;
 BuiltinFuncType subtract;
 BuiltinFuncType multiply;
 BuiltinFuncType divide;
 BuiltinFuncType abs;
+BuiltinFuncType expt;
+BuiltinFuncType quotient;
+BuiltinFuncType remainder;
+BuiltinFuncType modulo;
 
-// pair and list
+// pair and list 9
 BuiltinFuncType car;
 BuiltinFuncType cdr;
+BuiltinFuncType append;
+BuiltinFuncType cons;
+BuiltinFuncType length;
+BuiltinFuncType list;
+BuiltinFuncType map;
+BuiltinFuncType filter;
+BuiltinFuncType reduce;
 
-// type complete
+// type 10
 BuiltinFuncType isAtom;
 BuiltinFuncType isBoolean;
 BuiltinFuncType isInteger;
@@ -31,9 +49,9 @@ BuiltinFuncType isProcedure;
 BuiltinFuncType isString;
 BuiltinFuncType isSymbol;
 
-// core complete
-// std::function<BuiltinFuncType> apply;  // apply and eval are defined
-// std::function<BuiltinFuncType> eval;   // as lambda expr in eval_env.cpp
+// core 8
+BuiltinFuncType apply;
+BuiltinFuncType eval;
 BuiltinFuncType display;
 BuiltinFuncType newline;
 BuiltinFuncType displayln;
@@ -41,7 +59,7 @@ BuiltinFuncType print;
 BuiltinFuncType exit;
 BuiltinFuncType error;
 
-// comp complete
+// comp 11
 BuiltinFuncType isEq;
 BuiltinFuncType isEqualValue;
 BuiltinFuncType isNot;
@@ -53,6 +71,9 @@ BuiltinFuncType lesserOrEqual;   // <=
 BuiltinFuncType isZero;
 BuiltinFuncType isEven;
 BuiltinFuncType isOdd;
+
+// 51 builtin forms in total, including 4 overloads
+extern const std::unordered_map<std::string, BuiltinFuncType*> builtin_forms;
 };  // namespace Builtins
 
 #endif

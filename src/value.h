@@ -22,7 +22,7 @@ enum class ValueType {
 class Value;
 
 using ValuePtr = std::shared_ptr<Value>;
-using BuiltinFuncType = ValuePtr(const std::vector<ValuePtr>&);
+using BuiltinFuncType = ValuePtr(const std::vector<ValuePtr>&, EvalEnv&);
 
 class Value {
 private:
@@ -56,7 +56,7 @@ private:
 public:
     BooleanValue(bool value) : Value(ValueType::BOOLEAN), value{value} {};
     bool getBool() const;
-    std::string toString() const override;
+    std::string toString() const final;
 };
 
 class NumericValue : public Value {
@@ -66,7 +66,7 @@ private:
 public:
     NumericValue(double value) : Value(ValueType::NUMERIC), value{value} {}
     double getVal() const;
-    std::string toString() const override;
+    std::string toString() const final;
 };
 
 class StringValue : public Value {
@@ -75,14 +75,14 @@ private:
 
 public:
     StringValue(const std::string str) : Value(ValueType::STRING), str{str} {}
-    std::string toString() const override;
+    std::string toString() const final;
     std::string getStr() const;
 };
 
 class NilValue : public Value {
 public:
     NilValue() : Value(ValueType::NIL) {}
-    std::string toString() const override;
+    std::string toString() const final;
 };
 
 class SymbolValue : public Value {
@@ -92,7 +92,7 @@ private:
 public:
     SymbolValue(const std::string value)
         : Value(ValueType::SYMBOL), name{value} {}
-    std::string toString() const override;
+    std::string toString() const final;
 };
 
 class PairValue : public Value {
@@ -110,7 +110,7 @@ public:
     ValuePtr cdr() const {
         return r_part;
     }
-    std::string toString() const override;
+    std::string toString() const final;
 };
 
 class BuiltinProcValue : public Value {
@@ -120,7 +120,7 @@ private:
 public:
     BuiltinProcValue(std::function<BuiltinFuncType> func)
         : Value(ValueType::BUILTIN_PROC), func{func} {}
-    std::string toString() const override;
+    std::string toString() const final;
     std::function<BuiltinFuncType> getFunc() const;
 };
 
@@ -139,7 +139,7 @@ public:
           envPtr{envPtr} {}
 
     ValuePtr apply(const std::vector<ValuePtr>& args);
-    std::string toString() const override;
+    std::string toString() const final;
 };
 
 #endif

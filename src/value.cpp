@@ -1,11 +1,12 @@
 #include "./value.h"
-#include "./eval_env.h"
 
 #include <algorithm>
 #include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
+
+#include "./eval_env.h"
 
 class EvalEnv;
 
@@ -66,7 +67,9 @@ bool Value::isList(ValuePtr expr) {
 }
 
 bool Value::isProcedure(ValuePtr expr) {
-    if (dynamic_pointer_cast<BuiltinProcValue>(expr)) return true;
+    if (dynamic_pointer_cast<BuiltinProcValue>(expr) ||
+        std::dynamic_pointer_cast<LambdaValue>(expr))
+        return true;
     return false;
 }
 
@@ -136,14 +139,10 @@ std::string PairValue::toString() const {
 }
 
 ValuePtr Value::makeList(const std::vector<ValuePtr>& lst) {
-    if (lst.size() == 1) {
-        return std::make_shared<PairValue>(lst.front(),
-                                           std::make_shared<NilValue>());
-    } else {
-        auto car = lst.front();
-        auto cdr = makeList({lst.begin() + 1, lst.end()});
-        return std::make_shared<PairValue>(car, cdr);
-    }
+    if (lst.empty()) return std::make_shared<NilValue>();
+
+    return std::make_shared<PairValue>(lst.front(),
+                                       makeList({lst.begin() + 1, lst.end()}));
 }
 
 std::string BuiltinProcValue::toString() const {

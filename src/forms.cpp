@@ -81,7 +81,7 @@ ValuePtr SpecialForm::ifForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
 
 ValuePtr SpecialForm::andForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     if (!args.empty()) {
-        for (size_t i = 0; i != args.size(); ++i) {
+        for (std::size_t i = 0; i != args.size(); ++i) {
             auto val = env.eval(args[i]);
             if (isVirtual(val)) return std::make_shared<BooleanValue>(false);
             if (i == args.size() - 1) return val;
@@ -103,7 +103,7 @@ ValuePtr SpecialForm::orForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
 
 ValuePtr SpecialForm::condForm(const std::vector<ValuePtr>& args,
                                EvalEnv& env) {
-    for (size_t i = 0; i != args.size(); ++i) {
+    for (std::size_t i = 0; i != args.size(); ++i) {
         if (!Value::isList(args[i]))
             throw LispError("Malformed list: expected pair or nil, got " +
                             args[i]->toString());
@@ -118,7 +118,7 @@ ValuePtr SpecialForm::condForm(const std::vector<ValuePtr>& args,
             cond = env.eval(clause[0]);
         if (isVirtual(cond)) continue;
         if (clause.size() == 1) return cond;
-        for (size_t j = 1; j != clause.size(); ++j) {
+        for (std::size_t j = 1; j != clause.size(); ++j) {
             if (j == clause.size() - 1) return env.eval(clause[j]);
             env.eval(clause[j]);
         }
@@ -131,7 +131,7 @@ ValuePtr SpecialForm::beginForm(const std::vector<ValuePtr>& args,
     if (args.size() < 1)
         throw LispError("Too few operands: " + std::to_string(args.size()) +
                         " < 1");
-    for (size_t i = 0; i != args.size(); ++i) {
+    for (std::size_t i = 0; i != args.size(); ++i) {
         auto val = env.eval(args[i]);
         if (i == args.size() - 1) return env.eval(args[i]);
     }

@@ -20,3 +20,5 @@
 - [ ] std::pmr::vector
 - [ ] std::enable_shared_from_this  CRTP, review lv.6.2
 - [ ] std::fmod, std::modf
+- [ ] decomposition declare: auto[name, func]
+- [ ] std::numeric_limits<std::size_t>::max()

@@ -13,93 +13,93 @@
 #include "./forms.h"
 
 std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
-    
     auto global = std::shared_ptr<EvalEnv>(new EvalEnv());
 
     using namespace Builtins;
+    for (auto &&[name, func] : builtin_forms) {
+        global->symbol_list[name] = std::make_shared<BuiltinProcValue>(func);
+    }
 
-    auto apply = [&global](const std::vector<ValuePtr>& params) {
-        if (params.size() > 2)
-            throw LispError("Too many arguments: " +
-                            std::to_string(params.size()) + " > 2");
-        if (params.size() < 2)
-            throw LispError("Too few arguments: " +
-                            std::to_string(params.size()) + " < 2");
-        if (Value::isList(params[1]) == false) 
-            throw LispError("Not a list: " + params[1]->toString());
-        return global->apply(params[0], global->evalList(params[1]));
-    };
+    // // calc
+    // global->symbol_list["+"] = std::make_shared<BuiltinProcValue>(add);
+    // global->symbol_list["-"] = std::make_shared<BuiltinProcValue>(subtract);
+    // global->symbol_list["*"] = std::make_shared<BuiltinProcValue>(multiply);
+    // global->symbol_list["/"] = std::make_shared<BuiltinProcValue>(divide);
+    // global->symbol_list["abs"] =
+    //     std::make_shared<BuiltinProcValue>(Builtins::abs);
+    // global->symbol_list["expt"] = std::make_shared<BuiltinProcValue>(expt);
+    // global->symbol_list["quotient"] =
+    //     std::make_shared<BuiltinProcValue>(quotient);
+    // global->symbol_list["modulo"] =
+    // std::make_shared<BuiltinProcValue>(modulo);
+    // global->symbol_list["remainder"] =
+    //     std::make_shared<BuiltinProcValue>(Builtins::remainder);
 
-    auto eval = [&global](const std::vector<ValuePtr>& params) {
-        if (params.size() > 1)
-            throw LispError("Too many arguments: " +
-                            std::to_string(params.size()) + " > 1");
-        if (params.size() < 1)
-            throw LispError(
-                "Too few arguments: " + std::to_string(params.size()) + " < 1");
-        return global->eval(params[0]);
-    };
+    // // pair and list
+    // global->symbol_list["car"] = std::make_shared<BuiltinProcValue>(car);
+    // global->symbol_list["cdr"] = std::make_shared<BuiltinProcValue>(cdr);
+    // global->symbol_list["append"] =
+    // std::make_shared<BuiltinProcValue>(append); global->symbol_list["cons"] =
+    // std::make_shared<BuiltinProcValue>(cons); global->symbol_list["length"] =
+    // std::make_shared<BuiltinProcValue>(length); global->symbol_list["list"] =
+    // std::make_shared<BuiltinProcValue>(list); global->symbol_list["map"] =
+    // std::make_shared<BuiltinProcValue>(map); global->symbol_list["filter"] =
+    // std::make_shared<BuiltinProcValue>(filter); global->symbol_list["reduce"]
+    // = std::make_shared<BuiltinProcValue>(reduce);
 
-    // calc
-    global->symbol_list["+"] = std::make_shared<BuiltinProcValue>(add);
-    global->symbol_list["-"] = std::make_shared<BuiltinProcValue>(subtract);
-    global->symbol_list["*"] = std::make_shared<BuiltinProcValue>(multiply);
-    global->symbol_list["/"] = std::make_shared<BuiltinProcValue>(divide);
-    global->symbol_list["abs"] =
-        std::make_shared<BuiltinProcValue>(Builtins::abs);
+    // // type
+    // global->symbol_list["atom?"] =
+    // std::make_shared<BuiltinProcValue>(isAtom);
+    // global->symbol_list["boolean?"] =
+    //     std::make_shared<BuiltinProcValue>(isBoolean);
+    // global->symbol_list["integer?"] =
+    //     std::make_shared<BuiltinProcValue>(isInteger);
+    // global->symbol_list["list?"] =
+    // std::make_shared<BuiltinProcValue>(isList);
+    // global->symbol_list["number?"] =
+    //     std::make_shared<BuiltinProcValue>(isNumber);
+    // global->symbol_list["null?"] =
+    // std::make_shared<BuiltinProcValue>(isNull); global->symbol_list["pair?"]
+    // = std::make_shared<BuiltinProcValue>(isPair);
+    // global->symbol_list["procedure?"] =
+    //     std::make_shared<BuiltinProcValue>(isProcedure);
+    // global->symbol_list["string?"] =
+    //     std::make_shared<BuiltinProcValue>(isString);
+    // global->symbol_list["symbol?"] =
+    //     std::make_shared<BuiltinProcValue>(isSymbol);
 
-    // pair and list
-    global->symbol_list["car"] = std::make_shared<BuiltinProcValue>(car);
-    global->symbol_list["cdr"] = std::make_shared<BuiltinProcValue>(cdr);
+    // // core
+    // global->symbol_list["apply"] =
+    //     std::make_shared<BuiltinProcValue>(Builtins::apply);
+    // global->symbol_list["eval"] =
+    //     std::make_shared<BuiltinProcValue>(Builtins::eval);
+    // global->symbol_list["display"] =
+    //     std::make_shared<BuiltinProcValue>(display);
+    // global->symbol_list["newline"] =
+    //     std::make_shared<BuiltinProcValue>(newline);
+    // global->symbol_list["displayln"] =
+    //     std::make_shared<BuiltinProcValue>(displayln);
+    // global->symbol_list["print"] = std::make_shared<BuiltinProcValue>(print);
+    // global->symbol_list["error"] = std::make_shared<BuiltinProcValue>(error);
+    // global->symbol_list["exit"] =
+    //     std::make_shared<BuiltinProcValue>(Builtins::exit);
 
-    // type
-    global->symbol_list["atom?"] = std::make_shared<BuiltinProcValue>(isAtom);
-    global->symbol_list["boolean?"] =
-        std::make_shared<BuiltinProcValue>(isBoolean);
-    global->symbol_list["integer?"] =
-        std::make_shared<BuiltinProcValue>(isInteger);
-    global->symbol_list["list?"] = std::make_shared<BuiltinProcValue>(isList);
-    global->symbol_list["number?"] =
-        std::make_shared<BuiltinProcValue>(isNumber);
-    global->symbol_list["null?"] = std::make_shared<BuiltinProcValue>(isNull);
-    global->symbol_list["pair?"] = std::make_shared<BuiltinProcValue>(isPair);
-    global->symbol_list["procedure?"] =
-        std::make_shared<BuiltinProcValue>(isProcedure);
-    global->symbol_list["string?"] =
-        std::make_shared<BuiltinProcValue>(isString);
-    global->symbol_list["symbol?"] =
-        std::make_shared<BuiltinProcValue>(isSymbol);
-
-    // core
-    global->symbol_list["apply"] =
-        std::make_shared<BuiltinProcValue>(apply);
-    global->symbol_list["eval"] =
-        std::make_shared<BuiltinProcValue>(eval);
-    global->symbol_list["display"] =
-        std::make_shared<BuiltinProcValue>(display);
-    global->symbol_list["newline"] =
-        std::make_shared<BuiltinProcValue>(newline);
-    global->symbol_list["displayln"] =
-        std::make_shared<BuiltinProcValue>(displayln);
-    global->symbol_list["print"] = std::make_shared<BuiltinProcValue>(print);
-    global->symbol_list["error"] = std::make_shared<BuiltinProcValue>(error);
-    global->symbol_list["exit"] =
-        std::make_shared<BuiltinProcValue>(Builtins::exit);
-
-    // comp
-    global->symbol_list["eq?"] = std::make_shared<BuiltinProcValue>(isEq);
-    global->symbol_list["equal?"] = std::make_shared<BuiltinProcValue>(isEqualValue);
-    global->symbol_list["not"] = std::make_shared<BuiltinProcValue>(isNot);
-    global->symbol_list["="] = std::make_shared<BuiltinProcValue>(equalNum);
-    global->symbol_list[">"] = std::make_shared<BuiltinProcValue>(greater);
-    global->symbol_list["<"] = std::make_shared<BuiltinProcValue>(lesser);
-    global->symbol_list[">="] =
-        std::make_shared<BuiltinProcValue>(greaterOrEqual);
-    global->symbol_list["<="] =
-        std::make_shared<BuiltinProcValue>(lesserOrEqual);
-    global->symbol_list["zero?"] = std::make_shared<BuiltinProcValue>(isZero);
-    global->symbol_list["even?"] = std::make_shared<BuiltinProcValue>(isEven);
-    global->symbol_list["odd?"] = std::make_shared<BuiltinProcValue>(isOdd);
+    // // comp
+    // global->symbol_list["eq?"] = std::make_shared<BuiltinProcValue>(isEq);
+    // global->symbol_list["equal?"] =
+    //     std::make_shared<BuiltinProcValue>(isEqualValue);
+    // global->symbol_list["not"] = std::make_shared<BuiltinProcValue>(isNot);
+    // global->symbol_list["="] = std::make_shared<BuiltinProcValue>(equalNum);
+    // global->symbol_list[">"] = std::make_shared<BuiltinProcValue>(greater);
+    // global->symbol_list["<"] = std::make_shared<BuiltinProcValue>(lesser);
+    // global->symbol_list[">="] =
+    //     std::make_shared<BuiltinProcValue>(greaterOrEqual);
+    // global->symbol_list["<="] =
+    //     std::make_shared<BuiltinProcValue>(lesserOrEqual);
+    // global->symbol_list["zero?"] =
+    // std::make_shared<BuiltinProcValue>(isZero); global->symbol_list["even?"]
+    // = std::make_shared<BuiltinProcValue>(isEven); global->symbol_list["odd?"]
+    // = std::make_shared<BuiltinProcValue>(isOdd);
 
     return global;
 }
@@ -125,7 +125,7 @@ std::vector<ValuePtr> EvalEnv::evalList(ValuePtr ls) {
 
 ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
     if (auto func = dynamic_pointer_cast<BuiltinProcValue>(proc)) {
-        return func->getFunc()(args);
+        return func->getFunc()(args, *this);
     } else if (auto func = std::dynamic_pointer_cast<LambdaValue>(proc)) {
         return func->apply(args);
     } else
@@ -167,8 +167,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
                 // don't eval arguments here, eval them inside special forms
                 auto form = SpecialForm::form_list.at(*name);
                 return form(ls->cdr()->toVector(), *this);
-            }
-            else {
+            } else {
                 auto proc = lookupBinding(*name);
                 std::vector<ValuePtr> args;
                 if (Value::isList(ls->cdr()))
@@ -177,17 +176,15 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
                     args.push_back(eval(ls->cdr()));
                 return apply(proc, args);
             }
-        }
-        else if (dynamic_pointer_cast<LambdaValue>(vec[0]) ||
-                 dynamic_pointer_cast<BuiltinProcValue>(vec[0])) {
+        } else if (dynamic_pointer_cast<LambdaValue>(vec[0]) ||
+                   dynamic_pointer_cast<BuiltinProcValue>(vec[0])) {
             std::vector<ValuePtr> args;
             if (Value::isList(ls->cdr()))
                 args = evalList(ls->cdr());
             else
                 args.push_back(eval(ls->cdr()));
             return apply(vec[0], args);
-        }
-        else
+        } else
             throw LispError("Not a procedure: " + vec[0]->toString());
     }
 
