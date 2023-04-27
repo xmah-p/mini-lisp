@@ -79,11 +79,17 @@ std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
         std::make_shared<BuiltinProcValue>(display);
     global->symbol_list["newline"] =
         std::make_shared<BuiltinProcValue>(newline);
+    global->symbol_list["displayln"] =
+        std::make_shared<BuiltinProcValue>(displayln);
     global->symbol_list["print"] = std::make_shared<BuiltinProcValue>(print);
+    global->symbol_list["error"] = std::make_shared<BuiltinProcValue>(error);
     global->symbol_list["exit"] =
         std::make_shared<BuiltinProcValue>(Builtins::exit);
 
     // comp
+    global->symbol_list["eq?"] = std::make_shared<BuiltinProcValue>(isEq);
+    global->symbol_list["equal?"] = std::make_shared<BuiltinProcValue>(isEqualValue);
+    global->symbol_list["not"] = std::make_shared<BuiltinProcValue>(isNot);
     global->symbol_list["="] = std::make_shared<BuiltinProcValue>(equalNum);
     global->symbol_list[">"] = std::make_shared<BuiltinProcValue>(greater);
     global->symbol_list["<"] = std::make_shared<BuiltinProcValue>(lesser);
@@ -92,6 +98,8 @@ std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
     global->symbol_list["<="] =
         std::make_shared<BuiltinProcValue>(lesserOrEqual);
     global->symbol_list["zero?"] = std::make_shared<BuiltinProcValue>(isZero);
+    global->symbol_list["even?"] = std::make_shared<BuiltinProcValue>(isEven);
+    global->symbol_list["odd?"] = std::make_shared<BuiltinProcValue>(isOdd);
 
     return global;
 }

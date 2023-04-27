@@ -9,43 +9,50 @@
 
 namespace Builtins {
 // calc
-ValuePtr add(const std::vector<ValuePtr>& params);
-ValuePtr subtract(const std::vector<ValuePtr>& params);
-ValuePtr multiply(const std::vector<ValuePtr>& params);
-ValuePtr divide(const std::vector<ValuePtr>& params);
-ValuePtr abs(const std::vector<ValuePtr>& params);
+BuiltinFuncType add;
+BuiltinFuncType subtract;
+BuiltinFuncType multiply;
+BuiltinFuncType divide;
+BuiltinFuncType abs;
 
 // pair and list
-ValuePtr car(const std::vector<ValuePtr>& params);
-ValuePtr cdr(const std::vector<ValuePtr>& params);
+BuiltinFuncType car;
+BuiltinFuncType cdr;
 
-// type
-ValuePtr isAtom(const std::vector<ValuePtr>& params);
-ValuePtr isBoolean(const std::vector<ValuePtr>& params);
-ValuePtr isInteger(const std::vector<ValuePtr>& params);
-ValuePtr isList(const std::vector<ValuePtr>& params);
-ValuePtr isNumber(const std::vector<ValuePtr>& params);
-ValuePtr isNull(const std::vector<ValuePtr>& params);
-ValuePtr isPair(const std::vector<ValuePtr>& params);
-ValuePtr isProcedure(const std::vector<ValuePtr>& params);
-ValuePtr isString(const std::vector<ValuePtr>& params);
-ValuePtr isSymbol(const std::vector<ValuePtr>& params);
+// type complete
+BuiltinFuncType isAtom;
+BuiltinFuncType isBoolean;
+BuiltinFuncType isInteger;
+BuiltinFuncType isList;
+BuiltinFuncType isNumber;
+BuiltinFuncType isNull;
+BuiltinFuncType isPair;
+BuiltinFuncType isProcedure;
+BuiltinFuncType isString;
+BuiltinFuncType isSymbol;
 
-// core
+// core complete
 // std::function<BuiltinFuncType> apply;  // apply and eval are defined
 // std::function<BuiltinFuncType> eval;   // as lambda expr in eval_env.cpp
-ValuePtr display(const std::vector<ValuePtr>& params);
-ValuePtr newline(const std::vector<ValuePtr>& params);
-ValuePtr print(const std::vector<ValuePtr>& params);
-ValuePtr exit(const std::vector<ValuePtr>& params);
+BuiltinFuncType display;
+BuiltinFuncType newline;
+BuiltinFuncType displayln;
+BuiltinFuncType print;
+BuiltinFuncType exit;
+BuiltinFuncType error;
 
-// comp
-ValuePtr greater(const std::vector<ValuePtr>& params);
-ValuePtr lesser(const std::vector<ValuePtr>& params);
-ValuePtr equalNum(const std::vector<ValuePtr>& params);
-ValuePtr greaterOrEqual(const std::vector<ValuePtr>& params);
-ValuePtr lesserOrEqual(const std::vector<ValuePtr>& params);
-ValuePtr isZero(const std::vector<ValuePtr>& params);
+// comp complete
+BuiltinFuncType isEq;
+BuiltinFuncType isEqualValue;
+BuiltinFuncType isNot;
+BuiltinFuncType greater;         // >
+BuiltinFuncType lesser;          // <
+BuiltinFuncType equalNum;        // =
+BuiltinFuncType greaterOrEqual;  // >=
+BuiltinFuncType lesserOrEqual;   // <=
+BuiltinFuncType isZero;
+BuiltinFuncType isEven;
+BuiltinFuncType isOdd;
 };  // namespace Builtins
 
 #endif

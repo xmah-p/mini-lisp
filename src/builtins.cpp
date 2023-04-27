@@ -1,5 +1,6 @@
 #include "./builtins.h"
 
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -229,6 +230,11 @@ ValuePtr Builtins::newline(const std::vector<ValuePtr>& params) {
     return std::make_shared<NilValue>();
 }
 
+ValuePtr Builtins::displayln(const std::vector<ValuePtr>& params) {
+    display(params);
+    return newline({});
+}
+
 ValuePtr Builtins::print(const std::vector<ValuePtr>& params) {
     for (auto& val : params) {
         std::cout << val->toString() << std::endl;
@@ -236,7 +242,42 @@ ValuePtr Builtins::print(const std::vector<ValuePtr>& params) {
     return std::make_shared<NilValue>();
 }
 
+ValuePtr Builtins::error(const std::vector<ValuePtr>& params) {
+    if (params.empty()) throw LispError("0");
+    throw LispError(params[0]->toString());
+}
+
 // comp
+
+ValuePtr Builtins::isEq(const std::vector<ValuePtr>& params) {
+    if (params.size() < 2)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 2");
+    if ((std::dynamic_pointer_cast<NumericValue>(params[0]) ||
+         std::dynamic_pointer_cast<SymbolValue>(params[0]) ||
+         std::dynamic_pointer_cast<BooleanValue>(params[0]) ||
+         std::dynamic_pointer_cast<NilValue>(params[0])) &&
+        params[0]->toString() == params[1]->toString())
+        return std::make_shared<BooleanValue>(true);
+    return std::make_shared<BooleanValue>(params[0] == params[1]);
+}
+
+ValuePtr Builtins::isEqualValue(const std::vector<ValuePtr>& params) {
+    if (params.size() < 2)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 2");
+    return std::make_shared<BooleanValue>(params[0]->toString() ==
+                                          params[1]->toString());
+}
+
+ValuePtr Builtins::isNot(const std::vector<ValuePtr>& params) {
+    if (params.size() < 1)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 1");
+    if (auto cond = std::dynamic_pointer_cast<BooleanValue>(params[0]))
+        if (!cond->getBool()) return std::make_shared<BooleanValue>(true);
+    return std::make_shared<BooleanValue>(false);
+}
 
 ValuePtr Builtins::greater(const std::vector<ValuePtr>& params) {
     if (params.size() > 2)
@@ -305,8 +346,29 @@ ValuePtr Builtins::lesserOrEqual(const std::vector<ValuePtr>& params) {
 }
 
 ValuePtr Builtins::isZero(const std::vector<ValuePtr>& params) {
-    if (params.size() > 1)
-        throw LispError("Too many arguments: " + std::to_string(params.size()) +
-                        " > 1");
+    if (params.size() < 1)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 1");
     return equalNum({params[0], std::make_shared<NumericValue>(0)});
+}
+
+ValuePtr Builtins::isEven(const std::vector<ValuePtr>& params) {
+    if (params.size() < 1)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 1");
+    if (auto num = params[0]->asNumber()) {
+        return std::make_shared<BooleanValue>(std::fmod(*num, 2) == 0.0);
+    }
+    throw LispError(params[0]->toString() + " is not number");
+}
+
+ValuePtr Builtins::isOdd(const std::vector<ValuePtr>& params) {
+    if (params.size() < 1)
+        throw LispError("Too few arguments: " + std::to_string(params.size()) +
+                        " < 1");
+    if (auto num = params[0]->asNumber()) {
+        return std::make_shared<BooleanValue>(std::fmod(*num, 2) != 0.0 &&
+                                              std::fmod(*num, 1) == 0.0);
+    }
+    throw LispError(params[0]->toString() + " is not number");
 }

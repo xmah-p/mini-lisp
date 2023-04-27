@@ -19,3 +19,4 @@
 - [ ] error
 - [ ] std::pmr::vector
 - [ ] std::enable_shared_from_this  CRTP, review lv.6.2
+- [ ] std::fmod, std::modf

@@ -15,7 +15,6 @@ private:
     static bool isVirtual(ValuePtr expr);  // return true iff expr == #f
     static SpecialFormType defineForm;
     static SpecialFormType lambdaForm;
-
     static SpecialFormType ifForm;
     static SpecialFormType andForm;
     static SpecialFormType orForm;
