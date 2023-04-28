@@ -22,3 +22,4 @@
 - [ ] std::fmod, std::modf
 - [ ] decomposition declare: auto[name, func]
 - [ ] std::numeric_limits<std::size_t>::max()
+- [ ] [[noreturn]]

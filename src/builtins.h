@@ -9,11 +9,13 @@
 #include "./value.h"
 
 namespace Builtins {
+
 // helper functions
 void checkArgNum(const std::vector<ValuePtr>& params, std::size_t min,
                  std::size_t max = std::numeric_limits<std::size_t>::max());
 std::vector<ValuePtr> vectorize(const ValuePtr& ls);
 std::vector<double> numericalize(const std::vector<ValuePtr>& vals);
+bool isVirtual(ValuePtr expr);  // return true iff expr == #f
 
 // calc 9
 BuiltinFuncType add;

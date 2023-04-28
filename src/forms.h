@@ -5,13 +5,17 @@
 #include <unordered_map>
 #include <vector>
 
+#include "./builtins.h"
 #include "./eval_env.h"
+
 
 using SpecialFormType = ValuePtr(const std::vector<ValuePtr>&, EvalEnv&);
 
 namespace SpecialForm {
+// using helper functions in builtins.h
+using Builtins::checkArgNum, Builtins::numericalize, Builtins::vectorize,
+    Builtins::isVirtual;
 
-bool isVirtual(ValuePtr expr);  // return true iff expr == #f
 SpecialFormType defineForm;
 SpecialFormType lambdaForm;
 SpecialFormType ifForm;
