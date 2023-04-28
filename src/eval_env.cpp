@@ -1,20 +1,15 @@
 #include "./eval_env.h"
 
-#include <algorithm>
-#include <functional>
-#include <iostream>
 #include <memory>
 #include <optional>
-#include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "./builtins.h"
 #include "./error.h"
 #include "./forms.h"
 
 std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
-    auto global = std::shared_ptr<EvalEnv>(new EvalEnv());
+    auto global = std::shared_ptr<EvalEnv>(new EvalEnv);
 
     for (auto&& [name, func] : Builtins::builtin_forms)
         global->symbol_list[name] = std::make_shared<BuiltinProcValue>(func);
@@ -24,7 +19,8 @@ std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
 
 std::shared_ptr<EvalEnv> EvalEnv::createChild(
     const std::vector<std::string>& params, const std::vector<ValuePtr>& args) {
-    auto child = std::shared_ptr<EvalEnv>(this->shared_from_this());
+
+    auto child = std::shared_ptr<EvalEnv>(new EvalEnv(*this));
     if (params.size() != args.size())
         throw LispError("Procedure expected " + std::to_string(params.size()) +
                         " parameters, got " + std::to_string(args.size()));
@@ -53,7 +49,7 @@ ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
 void EvalEnv::defineBinding(ValuePtr name, ValuePtr val) {
     auto sym = name->asSymbol();
     if (sym == std::nullopt)
-        throw LispError(name->toString() + " is not a specifier");
+        throw LispError(name->toString() + " is not a identifier");
     this->symbol_list[*sym] = val;
 }
 

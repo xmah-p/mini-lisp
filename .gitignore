@@ -3,6 +3,7 @@ submit/*
 TODO.md
 .clang-format
 .editorconfig
+test.md
 
 # CMake and Xmake output
 bin

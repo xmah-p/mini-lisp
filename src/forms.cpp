@@ -13,10 +13,7 @@
 ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
                                  EvalEnv& env) {
     checkArgNum(args, 2);
-
-    // (define (double x) (+ x x) x)  <=>  (define double (lambda (x) (+ x x)
-    // x))
-
+    
     if (Value::isList(args[0])) {
         auto signature = args[0]->toVector();
 
@@ -120,9 +117,6 @@ ValuePtr SpecialForm::beginForm(const std::vector<ValuePtr>& args,
 }
 
 ValuePtr SpecialForm::letForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
-    // (let ((x 42)(y 56)) (+ x y) x)
-    // is equal to
-    // ((lambda (x y) (+ x y) x) 42 56)
     checkArgNum(args, 2);
 
     auto param_list = vectorize(args[0]);
@@ -139,7 +133,7 @@ ValuePtr SpecialForm::letForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
                                   bind_vec[0]->toString())
                 : *bind_vec[0]->asSymbol());
 
-        values.push_back(bind_vec[1]);
+        values.push_back(env.eval(bind_vec[1]));
     }
     std::vector<ValuePtr> body(args.begin() + 1, args.end());
     auto lambda =

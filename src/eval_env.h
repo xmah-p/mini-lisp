@@ -11,6 +11,7 @@ class EvalEnv : public std::enable_shared_from_this<EvalEnv> {
 private:
     EvalEnv() = default;
     EvalEnv(std::shared_ptr<EvalEnv> parent) : parent{parent} {}
+    EvalEnv(const EvalEnv& env) : parent{env.parent}, symbol_list(env.symbol_list) {}
 
 public:
     std::shared_ptr<EvalEnv> parent{nullptr};

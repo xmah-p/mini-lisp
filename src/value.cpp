@@ -155,7 +155,7 @@ std::function<BuiltinFuncType> BuiltinProcValue::getFunc() const {
 
 ValuePtr LambdaValue::apply(const std::vector<ValuePtr>& args) {
     auto env = this->envPtr->EvalEnv::createChild(this->params, args);
-    for (unsigned int i = 0; i < this->body.size() - 1; ++i) {
+    for (std::size_t i = 0; i < this->body.size() - 1; ++i) {
         env->eval(this->body[i]);
     }
     return env->eval(this->body.back());
