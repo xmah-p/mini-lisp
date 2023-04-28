@@ -2,7 +2,6 @@
 #define TOKENIZER_H
 
 #include <deque>
-#include <string>
 
 #include "./token.h"
 

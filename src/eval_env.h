@@ -1,9 +1,6 @@
 #ifndef EVAL_ENV_H
 #define EVAL_ENV_H
 
-#include <memory>
-#include <string>
-#include <unordered_map>
 
 #include "./value.h"
 

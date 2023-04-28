@@ -1,6 +1,6 @@
-#include <iostream>
 #include <string>
 
+#include "./boot.h"
 #include "./eval_env.h"
 #include "./parser.h"
 #include "./tokenizer.h"
@@ -18,25 +18,13 @@ struct TestCtx {
     }
 };
 
-int main() {
-    RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
+int main(int argc, char **argv) {
+    // RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
 
-    while (true) {
-        try {
-            std::cout << ">>> ";
-            std::string line;
-            std::getline(std::cin, line);
-            if (std::cin.eof()) {
-                std::exit(0);
-            }
-            auto tokens = Tokenizer::tokenize(line);
-            Parser parser(std::move(tokens));
-            auto value = parser.parse();
-            static auto env = EvalEnv::createGlobal();
-            auto result = env->eval(std::move(value));
-            std::cout << result->toString() << std::endl;
-        } catch (std::runtime_error& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-        }
+    switch (argc) {
+        case 1: REPLMode();
+        case 2: fileMode(argv[1]);
+        case 3: interactiveMode(argv[1], argv[2]);
+        default: std::cerr << "Error: Invalid arguments" << std::endl;
     }
 }

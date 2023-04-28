@@ -1,9 +1,6 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#include <memory>
-#include <optional>
-#include <ostream>
 #include <string>
 
 enum class TokenType {

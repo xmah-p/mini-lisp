@@ -1,9 +1,6 @@
 #ifndef FORMS_H
 #define FORMS_H
 
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #include "./builtins.h"
 #include "./eval_env.h"

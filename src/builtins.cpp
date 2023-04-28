@@ -1,14 +1,7 @@
 #include "./builtins.h"
 
-#include <algorithm>
-#include <cmath>
-#include <functional>
 #include <iostream>
-#include <memory>
 #include <numeric>
-#include <optional>
-#include <string>
-#include <vector>
 
 #include "./error.h"
 #include "./eval_env.h"

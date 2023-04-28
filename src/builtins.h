@@ -1,11 +1,6 @@
 #ifndef BUILTINS_H
 #define BUILTINS_H
 
-#include <functional>
-#include <unordered_map>
-#include <vector>
-#include <limits>
-
 #include "./value.h"
 
 namespace Builtins {

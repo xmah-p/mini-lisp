@@ -1,10 +1,7 @@
 #include "./value.h"
 
-#include <algorithm>
 #include <iomanip>
-#include <memory>
 #include <sstream>
-#include <string>
 
 #include "./eval_env.h"
 

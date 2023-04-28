@@ -1,8 +1,5 @@
 #include "./eval_env.h"
 
-#include <memory>
-#include <optional>
-#include <unordered_map>
 
 #include "./builtins.h"
 #include "./error.h"

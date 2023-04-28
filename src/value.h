@@ -1,11 +1,7 @@
 #ifndef VALUE_H
 #define VALUE_H
 
-#include <functional>
-#include <memory>
-#include <optional>
 #include <string>
-#include <vector>
 
 class EvalEnv;
 

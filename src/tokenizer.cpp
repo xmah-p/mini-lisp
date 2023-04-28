@@ -2,7 +2,6 @@
 
 #include <cctype>
 #include <set>
-#include <stdexcept>
 
 #include "./error.h"
 
