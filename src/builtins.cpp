@@ -15,7 +15,7 @@
 
 // helper functions
 void Builtins::checkArgNum(const std::vector<ValuePtr>& params, std::size_t min,
-                 std::size_t max) {
+                           std::size_t max) {
     if (params.size() > max)
         throw LispError("Too many arguments: " + std::to_string(params.size()) +
                         " > " + std::to_string(max));
@@ -248,8 +248,8 @@ ValuePtr Builtins::isInteger(const std::vector<ValuePtr>& params,
                              EvalEnv& env) {
     checkArgNum(params, 1);
 
-    if (double num = *params[0]->asNumber()) {
-        return (fmod(num, 1.0) == 0.0) ? std::make_shared<BooleanValue>(true)
+    if (auto num = params[0]->asNumber()) {
+        return (fmod(*num, 1.0) == 0.0) ? std::make_shared<BooleanValue>(true)
                                        : std::make_shared<BooleanValue>(false);
     }
     return std::make_shared<BooleanValue>(false);
