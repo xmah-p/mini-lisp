@@ -4,7 +4,7 @@
 #include <string>
 
 void REPLMode();
-void fileMode(std::string);
-void interactiveMode(std::string, std::string);
+void fileMode(const std::string&);
+void interactiveMode(const std::string&, const std::string&);
 
 #endif

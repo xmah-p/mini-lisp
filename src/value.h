@@ -12,7 +12,8 @@ enum class ValueType {
     NIL,
     SYMBOL,
     PAIR,
-    BUILTIN_PROC
+    BUILTIN_PROC,
+    LAMBDA
 };
 
 class Value;
@@ -129,7 +130,7 @@ private:
 public:
     LambdaValue(std::vector<std::string> params, std::vector<ValuePtr> body,
                 std::shared_ptr<EvalEnv> envPtr)
-        : Value(ValueType::BUILTIN_PROC),
+        : Value(ValueType::LAMBDA),
           params{params},
           body{body},
           envPtr{envPtr} {}

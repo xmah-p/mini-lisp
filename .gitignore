@@ -4,6 +4,9 @@ TODO.md
 .clang-format
 .editorconfig
 test*
+console.md
+doc.md
+*.json
 
 # CMake and Xmake output
 bin

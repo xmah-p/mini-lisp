@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 
 #include "./boot.h"
@@ -5,7 +6,7 @@
 #include "./parser.h"
 #include "./tokenizer.h"
 #include "./value.h"
-#include "rjsj_test.hpp"
+// #include "rjsj_test.hpp"
 
 struct TestCtx {
     std::string eval(std::string input) {
