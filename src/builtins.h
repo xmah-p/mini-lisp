@@ -69,6 +69,12 @@ BuiltinFuncType isZero;
 BuiltinFuncType isEven;
 BuiltinFuncType isOdd;
 
+// extra
+BuiltinFuncType max;
+BuiltinFuncType min;
+
+
+
 // 51 builtin forms in total, including 4 overloads
 extern const std::unordered_map<std::string, BuiltinFuncType*> builtin_forms;
 };  // namespace Builtins

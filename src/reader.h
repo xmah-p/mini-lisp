@@ -17,6 +17,7 @@ class Reader {
 
     std::deque<TokenPtr> read();
     bool emptyExpr(const std::string&);
+    std::string handleInput(std::string);
     std::size_t notWholeExpr(
         const std::string&);  // return 0 if whole expr, or num of spaces
                               // for indentation if not whole expr

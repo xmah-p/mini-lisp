@@ -45,3 +45,55 @@
 ...         )
 >>> double
 ```
+
+### 更多的内置过程
+
+`(max x ...)`
+
+返回值：参数中的最大值。
+
+
+`(min x ...)`
+
+返回值：参数中的最小值。
+
+
+`(set! x y)`
+
+将 `x` 的值设定为 `y`   返回值：`y`
+
+
+`(list-ref ls x)`
+
+返回值：列表 `ls` 索引为 `x` 的元素（索引自 0 开始）
+
+
+`(list-tail ls x)`
+
+返回值：列表 `ls` 的以索引为 `x` 的元素起始的子列表
+
+
+`(number->string x)`
+
+`(list->string ls)`
+
+`(symbol->string sym)`
+
+`(string->number str)`
+
+`(string->symbol str)`
+
+`string` 与其他类型之间的类型转换。
+
+
+`(let* ((x 1)
+        (y x))
+       (+ x y))`
+
+嵌套的 `let`，等价于 `(let ((x 1))
+                          (let ((y x))
+                               (+ x y)))`
+
+
+
+    

@@ -7,7 +7,20 @@
 #include "./error.h"
 #include "./tokenizer.h"
 
-std::size_t Reader::notWholeExpr(const std::string& str) {
+std::string Reader::handleInput(std::string str) {
+    auto npos = std::string::npos;
+    if (str.find(';') != npos) str.erase(str.find(';'));
+
+    for (auto pos = str.find('"'); pos != npos; pos = str.find('"')) {
+        auto nextpos = str.find('"', pos + 1);
+        if (nextpos == npos) throw SyntaxError("Unmatched quote!");
+        str.erase(pos, nextpos - pos + 1);
+    }
+    return str;
+}
+
+std::size_t Reader::notWholeExpr(const std::string& expr) {
+    std::string str = handleInput(expr);
     std::stack<std::size_t> stk;
     for (std::size_t i = 0; i != str.length(); ++i) {
         char c = str[i];
