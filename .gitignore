@@ -1,6 +1,6 @@
 # my ignore
 submit/*
-TODO.md
+note*
 .clang-format
 .editorconfig
 test*
