@@ -50,14 +50,14 @@ void EvalEnv::defineBinding(ValuePtr name, ValuePtr val) {
     this->symbol_list[*sym] = val;
 }
 
-ValuePtr EvalEnv::lookupBinding(std::string name) const {
+ValuePtr& EvalEnv::lookupBinding(std::string name) {
     while (symbol_list.find(name) == symbol_list.end()) {
         if (this->parent != nullptr)
             return this->parent->lookupBinding(name);
         else
             throw LispError("Unbound variable " + name);
     }
-    return symbol_list.at(name);
+    return symbol_list[name];
 }
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {

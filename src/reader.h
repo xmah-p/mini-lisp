@@ -8,22 +8,30 @@
 
 class Reader {
     std::istream& is;
-    std::size_t* line_num_ptr;
+    std::size_t* line_num_ptr;  // for error track in FILEMODE
     const bool FILEMODE;
-    Reader(std::istream& is, std::size_t* line_num_ptr)
+
+    // check if expr contains only comments and spaces
+    bool emptyExpr(const std::string&);
+
+    // return a string with StringValue and comments removed.
+    // also check if quotes match.
+    std::string handleInput(std::string);
+
+    // return 0 if parentheses already match, or num of spaces for indentation
+    // if not.
+    std::size_t notWholeExpr(const std::string&);
+
+public:
+    Reader(std::istream& is, std::size_t* line_num_ptr = nullptr)
         : is{is},
           line_num_ptr{line_num_ptr},
           FILEMODE{line_num_ptr ? true : false} {}
 
-    std::deque<TokenPtr> read();
-    bool emptyExpr(const std::string&);
-    std::string handleInput(std::string);
-    std::size_t notWholeExpr(
-        const std::string&);  // return 0 if whole expr, or num of spaces
-                              // for indentation if not whole expr
+    // read a whole expr from is.
+    std::string read();
 
-public:
-    static std::deque<TokenPtr> read(std::istream&, std::size_t* ptr = nullptr);
+    bool fail();
 };
 
 #endif

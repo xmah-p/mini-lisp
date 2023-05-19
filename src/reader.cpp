@@ -5,7 +5,10 @@
 #include <string>
 
 #include "./error.h"
-#include "./tokenizer.h"
+
+bool Reader::fail() {
+    return is.fail();
+}
 
 std::string Reader::handleInput(std::string str) {
     auto npos = std::string::npos;
@@ -33,20 +36,21 @@ std::size_t Reader::notWholeExpr(const std::string& expr) {
     }
     if (stk.empty()) return 0;
     std::size_t indent = stk.top() + 1;
-    while (std::isspace(str[indent])) ++indent;
-    while (!std::isspace(str[indent])) ++indent;
+    while (std::isspace(str[indent]) && indent < str.length()) ++indent;
+    while (!std::isspace(str[indent]) && indent < str.length()) ++indent;
     return indent + 2;
 }
 
 bool Reader::emptyExpr(const std::string& str) {
-    if (str == "" || str[0] == ';') return true;
-    if (std::all_of(str.begin(), str.end(),
+    auto pos = std::min(str.length(), str.find(';'));
+    if (str == "") return true;
+    if (std::all_of(str.begin(), str.begin() + pos,
                     [](char c) { return std::isspace(c); }))
         return true;
     return false;
 }
 
-std::deque<TokenPtr> Reader::read() {
+std::string Reader::read() {
     std::string line;
     do {
         if (FILEMODE)
@@ -54,7 +58,7 @@ std::deque<TokenPtr> Reader::read() {
         else
             std::cout << ">>> ";
         std::getline(is, line);
-        if (is.fail()) return {};
+        if (is.fail()) return "";
     } while (emptyExpr(line));
 
     while (std::size_t n = notWholeExpr(line)) {
@@ -70,15 +74,10 @@ std::deque<TokenPtr> Reader::read() {
             else
                 std::cout << "..." + str_repeat(" ", n);
             std::getline(is, nextln);
-            if (is.fail()) return {};
+            if (is.fail()) return "";
         } while (emptyExpr(nextln));
 
         line += " " + nextln;
     }
-    auto tokens = Tokenizer::tokenize(line);
-    return tokens;
-}
-
-std::deque<TokenPtr> Reader::read(std::istream& is, std::size_t* ptr) {
-    return Reader(is, ptr).read();
+    return line;
 }

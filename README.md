@@ -58,11 +58,6 @@
 返回值：参数中的最小值。
 
 
-`(set! x y)`
-
-将 `x` 的值设定为 `y`   返回值：`y`
-
-
 `(list-ref ls x)`
 
 返回值：列表 `ls` 索引为 `x` 的元素（索引自 0 开始）
@@ -75,24 +70,16 @@
 
 `(number->string x)`
 
-`(list->string ls)`
-
-`(symbol->string sym)`
-
 `(string->number str)`
 
-`(string->symbol str)`
-
-`string` 与其他类型之间的类型转换。
+`string` 与 `number` 之间的类型转换。
 
 
-`(let* ((x 1)
-        (y x))
-       (+ x y))`
+`(set! x y)`
 
-嵌套的 `let`，等价于 `(let ((x 1))
-                          (let ((y x))
-                               (+ x y)))`
+将 `x` 的值设定为 `y`   返回值：`y`
+
+
 
 
 

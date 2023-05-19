@@ -1,5 +1,6 @@
 #include "./builtins.h"
 
+#include <iomanip>
 #include <iostream>
 #include <numeric>
 
@@ -243,7 +244,7 @@ ValuePtr Builtins::isInteger(const std::vector<ValuePtr>& params,
 
     if (auto num = params[0]->asNumber()) {
         return (fmod(*num, 1.0) == 0.0) ? std::make_shared<BooleanValue>(true)
-                                       : std::make_shared<BooleanValue>(false);
+                                        : std::make_shared<BooleanValue>(false);
     }
     return std::make_shared<BooleanValue>(false);
 }
@@ -442,6 +443,74 @@ ValuePtr Builtins::isOdd(const std::vector<ValuePtr>& params, EvalEnv& env) {
                                           std::fmod(num, 1) == 0.0);
 }
 
+ValuePtr Builtins::max(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 1);
+
+    auto nums = numericalize(params);
+    double res = *std::ranges::max_element(nums);
+    return std::make_shared<NumericValue>(res);
+}
+
+ValuePtr Builtins::min(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 1);
+
+    auto nums = numericalize(params);
+    double res = *std::ranges::min_element(nums);
+    return std::make_shared<NumericValue>(res);
+}
+
+ValuePtr Builtins::listRef(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 2);
+
+    auto vec = vectorize(params[0]);
+    int idx = static_cast<int>(numericalize({params[1]})[0]);
+    if (idx >= vec.size())
+        throw LispError("List index out of range: " + params[0]->toString() +
+                        "[" + std::to_string(idx) + "]");
+    return vec[idx];
+}
+
+ValuePtr Builtins::listTail(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 2);
+
+    auto vec = vectorize(params[0]);
+    int idx = static_cast<int>(numericalize({params[1]})[0]);
+    if (idx >= vec.size())
+        throw LispError("List index out of range: " + params[0]->toString() +
+                        "[" + std::to_string(idx) + "]");
+    return Value::makeList({vec.begin() + idx, vec.end()});
+}
+
+ValuePtr Builtins::numberToString(const std::vector<ValuePtr>& params,
+                                  EvalEnv& env) {
+    checkArgNum(params, 1);
+
+    double num = numericalize({params[0]})[0];
+    std::string str;
+    if (std::fmod(num, 1.0) == 0.0)
+        str = std::to_string(static_cast<int>(num));
+    else
+        str = std::to_string(num);
+    return std::make_shared<StringValue>(str);
+}
+
+ValuePtr Builtins::stringToNumber(const std::vector<ValuePtr>& params,
+                                  EvalEnv& env) {
+    checkArgNum(params, 1);
+
+    std::string str = params[0]->toString();
+    if (!std::dynamic_pointer_cast<StringValue>(params[0]))
+        throw LispError("Not a string: " + str);
+    str.erase(0, 1);
+    str.erase(str.length() - 1, 1);
+    try {
+        double num = std::stod(str);
+        return std::make_shared<NumericValue>(num);
+    } catch (std::invalid_argument&) {
+        throw LispError("Invalid argument: " + str);
+    }
+}
+
 extern const std::unordered_map<std::string, BuiltinFuncType*>
     Builtins::builtin_forms = {{"+", add},
                                {"-", subtract},
@@ -489,4 +558,10 @@ extern const std::unordered_map<std::string, BuiltinFuncType*>
                                {"<=", lesserOrEqual},
                                {"zero?", isZero},
                                {"odd?", isOdd},
-                               {"even?", isEven}};
+                               {"even?", isEven},
+                               {"max", max},
+                               {"min", min},
+                               {"list-ref", listRef},
+                               {"list-tail", listTail},
+                               {"number->string", numberToString},
+                               {"string->number", stringToNumber}};

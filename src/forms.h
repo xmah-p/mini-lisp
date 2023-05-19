@@ -25,6 +25,9 @@ SpecialFormType quoteForm;
 SpecialFormType quasiquoteForm;
 SpecialFormType unquoteForm;  // '(1 2) is as if (quote (1 2))
 
+// extra
+SpecialFormType setForm;
+
 extern const std::unordered_map<std::string, SpecialFormType*> form_list;
 };  // namespace SpecialForm
 

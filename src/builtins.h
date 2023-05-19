@@ -9,6 +9,7 @@ namespace Builtins {
 void checkArgNum(const std::vector<ValuePtr>& params, std::size_t min,
                  std::size_t max = std::numeric_limits<std::size_t>::max());
 std::vector<ValuePtr> vectorize(const ValuePtr& ls);
+// extract a number sequence from vals.
 std::vector<double> numericalize(const std::vector<ValuePtr>& vals);
 bool isVirtual(ValuePtr expr);  // return true iff expr == #f
 
@@ -72,10 +73,13 @@ BuiltinFuncType isOdd;
 // extra
 BuiltinFuncType max;
 BuiltinFuncType min;
+BuiltinFuncType listRef;
+BuiltinFuncType listTail;
+BuiltinFuncType numberToString;
+BuiltinFuncType stringToNumber;
 
 
-
-// 51 builtin forms in total, including 4 overloads
+// 51 std builtin forms, including 4 overloads
 extern const std::unordered_map<std::string, BuiltinFuncType*> builtin_forms;
 };  // namespace Builtins
 

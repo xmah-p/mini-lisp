@@ -87,9 +87,8 @@ double NumericValue::getVal() const {
 }
 
 std::string NumericValue::toString() const {
-    return (value - static_cast<int>(value)) == 0
-               ? std::to_string(static_cast<int>(value))
-               : std::to_string(value);
+    return fmod(value, 1.0) == 0.0 ? std::to_string(static_cast<int>(value))
+                                   : std::to_string(value);
 }
 
 std::string StringValue::toString() const {

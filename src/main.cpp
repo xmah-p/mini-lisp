@@ -6,7 +6,7 @@
 #include "./parser.h"
 #include "./tokenizer.h"
 #include "./value.h"
-// #include "rjsj_test.hpp"
+#include "rjsj_test.hpp"
 
 struct TestCtx {
     std::string eval(std::string input) {
@@ -19,8 +19,13 @@ struct TestCtx {
     }
 };
 
+int test() {
+    RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
+    return 0;
+}
+
 int main(int argc, char **argv) {
-    // RJSJ_TEST(TestCtx, Lv2, Lv3, Lv4, Lv5, Lv5Extra, Lv6, Lv7, Lv7Lib, Sicp);
+    // return test();
 
     switch (argc) {
         case 1: REPLMode();

@@ -6,9 +6,9 @@
 #include "./error.h"
 #include "./eval_env.h"
 #include "./parser.h"
-#include "./value.h"
+#include "./tokenizer.h"
 #include "./reader.h"
-
+#include "./value.h"
 
 ValuePtr evaluate(std::deque<TokenPtr> tokens) {
     Parser parser(std::move(tokens));
@@ -20,8 +20,10 @@ ValuePtr evaluate(std::deque<TokenPtr> tokens) {
 void REPLMode() {
     while (true) {
         try {
-            auto tokens = Reader::read(std::cin);
-            if (tokens.empty()) std::exit(0);
+            Reader reader(std::cin);
+            std::string expr = reader.read();
+            if (reader.fail()) std::exit(0);
+            auto tokens = Tokenizer::tokenize(expr); 
             auto result = evaluate(std::move(tokens));
             std::cout << result->toString() << std::endl;
         } catch (SyntaxError& e) {
@@ -41,8 +43,10 @@ void fileMode(const std::string& file) {
     std::size_t line_num = 0;
     while (true) {
         try {
-            auto tokens = Reader::read(src, &line_num);
-            if (tokens.empty()) break;
+            Reader reader(src, &line_num);
+            std::string expr = reader.read();
+            auto tokens = Tokenizer::tokenize(expr);
+            if (reader.fail()) break;
             auto result = evaluate(std::move(tokens));
         } catch (std::runtime_error& e) {
             std::cerr << "Error occurred in " + file + " line " +

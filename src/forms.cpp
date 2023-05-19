@@ -1,12 +1,11 @@
 #include "./forms.h"
 
-
 #include "./error.h"
 
 ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
                                  EvalEnv& env) {
     checkArgNum(args, 2);
-    
+
     if (Value::isList(args[0])) {
         auto signature = args[0]->toVector();
 
@@ -143,8 +142,7 @@ ValuePtr SpecialForm::quasiquoteForm(const std::vector<ValuePtr>& args,
                                      EvalEnv& env) {
     if (!Value::isList(args[0])) return args[0];
     auto quoted = args[0]->toVector();
-    if (quoted[0]->asSymbol() == "unquote") 
-        return env.eval(quoted[1]);
+    if (quoted[0]->asSymbol() == "unquote") return env.eval(quoted[1]);
 
     for (auto& expr : quoted) {
         if (Value::isList(expr) &&
@@ -160,11 +158,23 @@ ValuePtr SpecialForm::unquoteForm(const std::vector<ValuePtr>& args,
     throw LispError("Cannot call unquote form outside quasiquote form");
 }
 
+// extra
+
+ValuePtr SpecialForm::setForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
+    checkArgNum(args, 2);
+
+    auto name = args[0]->asSymbol();
+    if (name == std::nullopt)
+        throw LispError("Invalid argument: " + args[0]->toString());
+    return env.lookupBinding(*name) = env.eval(args[1]);
+}
+
+
 extern const std::unordered_map<std::string, SpecialFormType*>
     SpecialForm::form_list{
-        {"define", defineForm},  {"lambda", lambdaForm},
-        {"quote", quoteForm},    {"if", ifForm},
-        {"and", andForm},        {"or", orForm},
-        {"begin", beginForm},    {"let", letForm},
-        {"cond", condForm},      {"quasiquote", quasiquoteForm},
-        {"unquote", unquoteForm}};
+        {"define", defineForm},    {"lambda", lambdaForm},
+        {"quote", quoteForm},      {"if", ifForm},
+        {"and", andForm},          {"or", orForm},
+        {"begin", beginForm},      {"let", letForm},
+        {"cond", condForm},        {"quasiquote", quasiquoteForm},
+        {"unquote", unquoteForm},  {"set!", setForm}};

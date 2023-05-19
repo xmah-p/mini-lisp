@@ -22,7 +22,7 @@ public:
     std::vector<ValuePtr> evalList(ValuePtr ls);
     ValuePtr apply(ValuePtr proc, std::vector<ValuePtr> args);
     void defineBinding(ValuePtr name, ValuePtr val);
-    ValuePtr lookupBinding(std::string name) const;
+    ValuePtr& lookupBinding(std::string name);
 };
 
 #endif
