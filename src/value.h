@@ -31,7 +31,7 @@ protected:
 public:
     virtual ~Value() = 0;
     std::vector<ValuePtr>
-    toVector();  // returns a vector storing all the elements in the list
+    toVector();  // list to vector, empty vector if nilValue
     std::optional<std::string> asSymbol() const;
     std::optional<double> asNumber() const;
     virtual std::string toString() const;
@@ -135,7 +135,8 @@ public:
           body{body},
           envPtr{envPtr} {}
 
-    ValuePtr apply(const std::vector<ValuePtr>& args);
+    // eval args by envPtr->env(), then apply them to lambda
+    ValuePtr apply(const std::vector<ValuePtr>& args) const;
     std::string toString() const final;
 };
 

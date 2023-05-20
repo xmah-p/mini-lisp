@@ -8,7 +8,9 @@ ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
 
     if (Value::isList(args[0])) {
         auto signature = args[0]->toVector();
-
+        if (signature.empty())
+            throw LispError("Malformed define form: " + args[0]->toString());
+            
         std::vector<ValuePtr> lambda_args{args};
         lambda_args[0] =
             Value::makeList({signature.begin() + 1, signature.end()});
@@ -169,12 +171,11 @@ ValuePtr SpecialForm::setForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     return env.lookupBinding(*name) = env.eval(args[1]);
 }
 
-
 extern const std::unordered_map<std::string, SpecialFormType*>
     SpecialForm::form_list{
-        {"define", defineForm},    {"lambda", lambdaForm},
-        {"quote", quoteForm},      {"if", ifForm},
-        {"and", andForm},          {"or", orForm},
-        {"begin", beginForm},      {"let", letForm},
-        {"cond", condForm},        {"quasiquote", quasiquoteForm},
-        {"unquote", unquoteForm},  {"set!", setForm}};
+        {"define", defineForm},   {"lambda", lambdaForm},
+        {"quote", quoteForm},     {"if", ifForm},
+        {"and", andForm},         {"or", orForm},
+        {"begin", beginForm},     {"let", letForm},
+        {"cond", condForm},       {"quasiquote", quasiquoteForm},
+        {"unquote", unquoteForm}, {"set!", setForm}};

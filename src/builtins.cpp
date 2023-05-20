@@ -7,6 +7,8 @@
 #include "./error.h"
 #include "./eval_env.h"
 
+namespace ranges = std::ranges;
+
 // helper functions
 void Builtins::checkArgNum(const std::vector<ValuePtr>& params, std::size_t min,
                            std::size_t max) {
@@ -171,7 +173,7 @@ ValuePtr Builtins::append(const std::vector<ValuePtr>& params, EvalEnv& env) {
     std::vector<ValuePtr> appended;
     for (auto& arg : params) {
         auto vec = vectorize(arg);
-        std::ranges::copy(vec, std::back_inserter(appended));
+        ranges::copy(vec, std::back_inserter(appended));
     }
     return Value::makeList(appended);
 }
@@ -184,7 +186,7 @@ ValuePtr Builtins::map(const std::vector<ValuePtr>& params, EvalEnv& env) {
         throw LispError("Not a procedure: " + params[0]->toString());
     auto list = vectorize(params[1]);
 
-    std::ranges::transform(
+    ranges::transform(
         list.begin(), list.end(), std::back_inserter(mapped),
         [&](ValuePtr arg) { return env.apply(params[0], {arg}); });
     return Value::makeList(mapped);
@@ -198,7 +200,7 @@ ValuePtr Builtins::filter(const std::vector<ValuePtr>& params, EvalEnv& env) {
         throw LispError("Not a procedure: " + params[0]->toString());
     auto list = vectorize(params[1]);
 
-    std::ranges::copy_if(
+    ranges::copy_if(
         list.begin(), list.end(), std::back_inserter(filtered),
         [&](ValuePtr val) { return !isVirtual(env.apply(params[0], {val})); });
     return Value::makeList(filtered);
@@ -447,7 +449,7 @@ ValuePtr Builtins::max(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 1);
 
     auto nums = numericalize(params);
-    double res = *std::ranges::max_element(nums);
+    double res = *ranges::max_element(nums);
     return std::make_shared<NumericValue>(res);
 }
 
@@ -455,7 +457,7 @@ ValuePtr Builtins::min(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 1);
 
     auto nums = numericalize(params);
-    double res = *std::ranges::min_element(nums);
+    double res = *ranges::min_element(nums);
     return std::make_shared<NumericValue>(res);
 }
 
@@ -511,6 +513,18 @@ ValuePtr Builtins::stringToNumber(const std::vector<ValuePtr>& params,
     }
 }
 
+ValuePtr Builtins::forEach(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 2, 2);
+
+    if (!Value::isProcedure(params[0]))
+        throw LispError("Not a procedure: " + params[0]->toString());
+    auto list = vectorize(params[1]);
+
+    ranges::for_each(list.begin(), list.end(),
+                     [&](ValuePtr arg) { return env.apply(params[0], {arg}); });
+    return std::make_shared<NilValue>();
+}
+
 extern const std::unordered_map<std::string, BuiltinFuncType*>
     Builtins::builtin_forms = {{"+", add},
                                {"-", subtract},
@@ -558,10 +572,11 @@ extern const std::unordered_map<std::string, BuiltinFuncType*>
                                {"<=", lesserOrEqual},
                                {"zero?", isZero},
                                {"odd?", isOdd},
-                               {"even?", isEven},
+                               {"even?", isEven},  // comp
                                {"max", max},
                                {"min", min},
                                {"list-ref", listRef},
                                {"list-tail", listTail},
                                {"number->string", numberToString},
-                               {"string->number", stringToNumber}};
+                               {"string->number", stringToNumber},
+                               {"for-each", forEach}};

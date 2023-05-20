@@ -1,6 +1,7 @@
 #include "./reader.h"
 
 #include <iostream>
+#include <numeric>
 #include <stack>
 #include <string>
 
@@ -17,28 +18,32 @@ std::string Reader::handleInput(std::string str) {
     for (auto pos = str.find('"'); pos != npos; pos = str.find('"')) {
         auto nextpos = str.find('"', pos + 1);
         if (nextpos == npos) throw SyntaxError("Unmatched quote!");
-        str.erase(pos, nextpos - pos + 1);
+        int len = nextpos - pos + 1;
+        str.replace(pos, len, std::string(len, '#'));
     }
     return str;
 }
 
-std::size_t Reader::notWholeExpr(const std::string& expr) {
+void Reader::handleIndent(const std::string& expr) {
     std::string str = handleInput(expr);
-    std::stack<std::size_t> stk;
+    bool first_Lparen = true;
+
     for (std::size_t i = 0; i != str.length(); ++i) {
         char c = str[i];
-        if (c == '(')
-            stk.push(i);
-        else if (c == ')') {
-            if (stk.empty()) throw SyntaxError("Unmatched parentheses!");
-            stk.pop();
+        if (c == '(') {
+            std::size_t pos = i + 1;
+            while (pos < str.length() && std::isspace(str[pos])) ++pos;
+            while (pos < str.length() && !std::isspace(str[pos])) ++pos;
+            int prev = 0;
+            if (first_Lparen && !indent_info.empty()) prev = indent_info.top();
+            indent_info.push(prev + pos + 1);
+            first_Lparen = false;
+        } else if (c == ')') {
+            if (indent_info.empty())
+                throw SyntaxError("Unmatched parentheses!");
+            indent_info.pop();
         }
     }
-    if (stk.empty()) return 0;
-    std::size_t indent = stk.top() + 1;
-    while (std::isspace(str[indent]) && indent < str.length()) ++indent;
-    while (!std::isspace(str[indent]) && indent < str.length()) ++indent;
-    return indent + 2;
 }
 
 bool Reader::emptyExpr(const std::string& str) {
@@ -61,23 +66,26 @@ std::string Reader::read() {
         if (is.fail()) return "";
     } while (emptyExpr(line));
 
-    while (std::size_t n = notWholeExpr(line)) {
+    std::string currln = line;
+    handleIndent(currln);
+    while (!indent_info.empty()) {
         auto str_repeat = [](std::string str, std::size_t n) {
             std::string res;
             for (std::size_t i = 0; i != n; ++i) res += str;
             return res;
         };
-        std::string nextln;
+
         do {
             if (FILEMODE)
                 (*line_num_ptr)++;
             else
-                std::cout << "..." + str_repeat(" ", n);
-            std::getline(is, nextln);
+                std::cout << "... " + str_repeat(" ", indent_info.top());
+            std::getline(is, currln);
             if (is.fail()) return "";
-        } while (emptyExpr(nextln));
+        } while (emptyExpr(currln));
 
-        line += " " + nextln;
+        handleIndent(currln);
+        line += " " + currln;
     }
     return line;
 }

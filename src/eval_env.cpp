@@ -46,7 +46,7 @@ ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
 void EvalEnv::defineBinding(ValuePtr name, ValuePtr val) {
     auto sym = name->asSymbol();
     if (sym == std::nullopt)
-        throw LispError(name->toString() + " is not a identifier");
+        throw LispError(name->toString() + " is not an identifier");
     this->symbol_list[*sym] = val;
 }
 
@@ -57,7 +57,7 @@ ValuePtr& EvalEnv::lookupBinding(std::string name) {
         else
             throw LispError("Unbound variable " + name);
     }
-    return symbol_list[name];
+    return symbol_list.at(name);
 }
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {
@@ -82,7 +82,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         if (auto name = vec[0]->asSymbol()) {
             if (SpecialForm::form_list.find(*name) !=
                 SpecialForm::form_list.end()) {
-                // don't eval arguments here, eval them inside special forms
+                // arguments not eval here, eval them inside special forms
                 auto form = SpecialForm::form_list.at(*name);
                 return form(ls->cdr()->toVector(), *this);
             } else {
@@ -110,5 +110,5 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         throw LispError("Malformed list: " + expr->toString());
 
     else
-        throw LispError("Unknown expression: " + expr->toString());
+        throw LispError("Unknown expression: " + expr->toString());  // dead code
 }

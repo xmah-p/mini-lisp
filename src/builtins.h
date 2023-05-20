@@ -77,7 +77,7 @@ BuiltinFuncType listRef;
 BuiltinFuncType listTail;
 BuiltinFuncType numberToString;
 BuiltinFuncType stringToNumber;
-
+BuiltinFuncType forEach;
 
 // 51 std builtin forms, including 4 overloads
 extern const std::unordered_map<std::string, BuiltinFuncType*> builtin_forms;
