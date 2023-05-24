@@ -28,13 +28,13 @@ void Reader::handleIndent(const std::string& expr) {
     std::string str = handleInput(expr);
     bool first_Lparen = true;
 
+    int prev = 0;
     for (std::size_t i = 0; i != str.length(); ++i) {
         char c = str[i];
         if (c == '(') {
             std::size_t pos = i + 1;
             while (pos < str.length() && std::isspace(str[pos])) ++pos;
             while (pos < str.length() && !std::isspace(str[pos])) ++pos;
-            int prev = 0;
             if (first_Lparen && !indent_info.empty()) prev = indent_info.top();
             indent_info.push(prev + pos + 1);
             first_Lparen = false;
