@@ -75,9 +75,18 @@ BuiltinFuncType max;
 BuiltinFuncType min;
 BuiltinFuncType listRef;
 BuiltinFuncType listTail;
+BuiltinFuncType forEach;
+BuiltinFuncType listReverse;
+BuiltinFuncType member;
 BuiltinFuncType numberToString;
 BuiltinFuncType stringToNumber;
-BuiltinFuncType forEach;
+BuiltinFuncType makeStr;
+BuiltinFuncType strRef;
+BuiltinFuncType strLength;
+BuiltinFuncType strAppend;
+BuiltinFuncType strCopy;
+BuiltinFuncType subStr;
+
 
 // 51 std builtin forms, including 4 overloads
 extern const std::unordered_map<std::string, BuiltinFuncType*> builtin_forms;

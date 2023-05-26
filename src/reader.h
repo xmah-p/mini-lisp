@@ -8,14 +8,14 @@
 
 class Reader {
     std::istream& is;
-    std::size_t* line_num_ptr;  // for error track in FILEMODE
+    std::size_t* line_num_ptr;  // for error tracking in FILEMODE
     const bool FILEMODE;
     std::stack<std::size_t> indent_info;
 
     // check if expr contains only comments and spaces
     bool emptyExpr(const std::string&);
 
-    // return a string with StringValue and comments muted.
+    // return a string with StringValues and comments muted.
     // also check if quotes match.
     std::string handleInput(std::string);
 

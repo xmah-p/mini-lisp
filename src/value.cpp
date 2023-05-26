@@ -2,7 +2,7 @@
 
 #include <iomanip>
 #include <sstream>
-
+#include "./error.h"
 #include "./eval_env.h"
 
 class EvalEnv;
@@ -29,6 +29,13 @@ std::optional<double> Value::asNumber() const {
     if (auto num = dynamic_cast<const NumericValue*>(this))
         return num->getVal();
     return std::nullopt;
+}
+
+std::string Value::asString() const {
+    if (auto str = dynamic_cast<const StringValue*>(this))
+        return str->getStr();
+    else
+        throw LispError("Not a string: " + str->toString());
 }
 
 bool Value::isNil(ValuePtr expr) {

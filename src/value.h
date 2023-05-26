@@ -34,6 +34,7 @@ public:
     toVector();  // list to vector, empty vector if nilValue
     std::optional<std::string> asSymbol() const;
     std::optional<double> asNumber() const;
+    std::string asString() const;
     virtual std::string toString() const;
 
     static bool isNil(ValuePtr expr);

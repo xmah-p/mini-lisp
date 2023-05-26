@@ -483,6 +483,38 @@ ValuePtr Builtins::listTail(const std::vector<ValuePtr>& params, EvalEnv& env) {
     return Value::makeList({vec.begin() + idx, vec.end()});
 }
 
+ValuePtr Builtins::forEach(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 2, 2);
+
+    if (!Value::isProcedure(params[0]))
+        throw LispError("Not a procedure: " + params[0]->toString());
+    auto list = vectorize(params[1]);
+
+    ranges::for_each(list.begin(), list.end(),
+                     [&](ValuePtr arg) { return env.apply(params[0], {arg}); });
+    return std::make_shared<NilValue>();
+}
+
+ValuePtr Builtins::listReverse(const std::vector<ValuePtr>& params,
+                               EvalEnv& env) {
+    checkArgNum(params, 1, 1);
+
+    auto ls = vectorize(params[0]);
+    decltype(ls) reversed;
+    std::reverse_copy(ls.begin(), ls.end(), std::back_inserter(reversed));
+    return Value::makeList(reversed);
+}
+
+ValuePtr Builtins::member(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 2, 2);
+
+    auto ls = vectorize(params[1]);
+    auto it = ls.begin();
+    while (it != ls.end() && (*it)->toString() != params[0]->toString()) ++it;
+    if (it == ls.end()) return std::make_shared<BooleanValue>(false);
+    return Value::makeList({it, ls.end()});
+}
+
 ValuePtr Builtins::numberToString(const std::vector<ValuePtr>& params,
                                   EvalEnv& env) {
     checkArgNum(params, 1);
@@ -513,16 +545,71 @@ ValuePtr Builtins::stringToNumber(const std::vector<ValuePtr>& params,
     }
 }
 
-ValuePtr Builtins::forEach(const std::vector<ValuePtr>& params, EvalEnv& env) {
+ValuePtr Builtins::makeStr(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 1, 2);
+
+    double n = numericalize({params[0]})[0];
+    if (n < 0)
+        throw LispError("Cannot make string with negative number " +
+                        params[0]->toString());
+    char c = ' ';
+    if (params.size() == 2) {
+        std::string tmp = params[1]->asString();
+        if (tmp.length() != 1) throw LispError("Not a char: \"" + tmp + "\"");
+        c = tmp[0];
+    }
+    return std::make_shared<StringValue>(
+        std::string(static_cast<std::size_t>(n), c));
+}
+
+ValuePtr Builtins::strRef(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 2, 2);
 
-    if (!Value::isProcedure(params[0]))
-        throw LispError("Not a procedure: " + params[0]->toString());
-    auto list = vectorize(params[1]);
+    std::string str = params[0]->asString();
+    std::size_t n = numericalize({params[1]})[0];
+    if (n >= str.length() || n < 0)
+        throw LispError("Index " + params[1]->toString() +
+                        " is out of bound of \"" + str + "\"");
 
-    ranges::for_each(list.begin(), list.end(),
-                     [&](ValuePtr arg) { return env.apply(params[0], {arg}); });
-    return std::make_shared<NilValue>();
+    return std::make_shared<StringValue>(std::string(1, str[n]));
+}
+
+ValuePtr Builtins::strLength(const std::vector<ValuePtr>& params,
+                             EvalEnv& env) {
+    checkArgNum(params, 1, 1);
+
+    std::string str = params[0]->asString();
+    return std::make_shared<NumericValue>(str.length());
+}
+
+ValuePtr Builtins::subStr(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 2, 3);
+
+    std::string str = params[0]->asString();
+    std::size_t pos = numericalize({params[1]})[0];
+    std::size_t n{std::string::npos};
+    if (params.size() == 3) n = numericalize({params[2]})[0];
+
+    if (n < 0 || pos < 0 || pos >= str.length())
+        throw LispError("Range {pos=" + params[1]->toString() +
+                        ", n=" + params[2]->toString() + "} out of bound");
+    return std::make_shared<StringValue>(str.substr(pos, n));
+}
+
+ValuePtr Builtins::strAppend(const std::vector<ValuePtr>& params,
+                             EvalEnv& env) {
+    checkArgNum(params, 2, 2);
+
+    std::string str0 = params[0]->asString();
+    std::string str1 = params[1]->asString();
+    return std::make_shared<StringValue>(str0 + str1);
+}
+
+ValuePtr Builtins::strCopy(const std::vector<ValuePtr>& params, EvalEnv& env) {
+    checkArgNum(params, 1, 1);
+
+    std::string str = params[0]->asString();
+    return std::make_shared<StringValue>(str);
 }
 
 extern const std::unordered_map<std::string, BuiltinFuncType*>
@@ -577,6 +664,14 @@ extern const std::unordered_map<std::string, BuiltinFuncType*>
                                {"min", min},
                                {"list-ref", listRef},
                                {"list-tail", listTail},
+                               {"for-each", forEach},
+                               {"reverse", listReverse},
+                               {"member", member},
                                {"number->string", numberToString},
                                {"string->number", stringToNumber},
-                               {"for-each", forEach}};
+                               {"make-string", makeStr},
+                               {"string-ref", strRef},
+                               {"string-length", strLength},
+                               {"string-append", strAppend},
+                               {"string-copy", strCopy},
+                               {"substring", subStr}};
