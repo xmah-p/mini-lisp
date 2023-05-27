@@ -2,78 +2,89 @@
 
 #include <iomanip>
 #include <sstream>
+
 #include "./error.h"
 #include "./eval_env.h"
-
-class EvalEnv;
 
 Value::~Value() {}
 
 std::vector<ValuePtr> Value::toVector() {
     std::vector<ValuePtr> vec;
-    if (auto pr = dynamic_cast<PairValue*>(this)) {
-        do {
-            vec.push_back(pr->car());
-        } while ((pr = dynamic_cast<PairValue*>(pr->cdr().get())));
+    if (auto pr = dynamic_cast<const PairValue*>(this)) {
+        do vec.push_back(pr->car());
+        while ((pr = dynamic_cast<const PairValue*>(pr->cdr().get())));
     }
     return vec;
 }
 
-std::optional<std::string> Value::asSymbol() const {
-    if (auto sym = dynamic_cast<const SymbolValue*>(this))
-        return sym->toString();
-    return std::nullopt;
+bool Value::asBool() const {
+    if (auto num = dynamic_cast<const BooleanValue*>(this))
+        return num->getVal();
+    throw TypeError(this->toString() + " is not a boolean!");
 }
 
-std::optional<double> Value::asNumber() const {
+double Value::asNumber() const {
     if (auto num = dynamic_cast<const NumericValue*>(this))
         return num->getVal();
-    return std::nullopt;
+    throw TypeError(this->toString() + " is not a number!");
 }
 
 std::string Value::asString() const {
-    if (auto str = dynamic_cast<const StringValue*>(this))
-        return str->getStr();
-    else
-        throw LispError("Not a string: " + str->toString());
+    if (auto str = dynamic_cast<const StringValue*>(this)) return str->getVal();
+    throw TypeError(this->toString() + " is not a string!");
+}
+
+std::string Value::asSymbol() const {
+    if (auto sym = dynamic_cast<const SymbolValue*>(this))
+        return sym->toString();
+    throw TypeError(this->toString() + " is not a symbol!");
+}
+
+bool Value::isBoolean(ValuePtr expr) {
+    return typeid(*expr) == typeid(BooleanValue);
+}
+
+bool Value::isNumeric(ValuePtr expr) {
+    return typeid(*expr) == typeid(NumericValue);
+}
+
+bool Value::isString(ValuePtr expr) {
+    return typeid(*expr) == typeid(StringValue);
+}
+
+bool Value::isSymbol(ValuePtr expr) {
+    return typeid(*expr) == typeid(SymbolValue);
 }
 
 bool Value::isNil(ValuePtr expr) {
-    if (dynamic_pointer_cast<NilValue>(expr)) return true;
-    return false;
-}
-
-bool Value::isSelfEvaluating(ValuePtr expr) {
-    if (dynamic_pointer_cast<NumericValue>(expr) ||
-        dynamic_pointer_cast<StringValue>(expr) ||
-        dynamic_pointer_cast<BooleanValue>(expr))
-        return true;
-    else
-        return false;
+    return typeid(*expr) == typeid(NilValue);
 }
 
 bool Value::isPair(ValuePtr expr) {
-    if (dynamic_pointer_cast<PairValue>(expr)) return true;
-    return false;
+    return typeid(*expr) == typeid(PairValue);
 }
 
 bool Value::isList(ValuePtr expr) {
-    if (isNil(expr)) return true;
-    if (isPair(expr)) {
-        if (auto pr = std::dynamic_pointer_cast<PairValue>(expr)) {
-            if (isList(pr->cdr()))
-                return true;
-            else
-                return false;
-        }
-    }
+    if (auto pr = dynamic_cast<const PairValue*>(expr.get()))
+        return isList(pr->cdr());
+    if (typeid(*expr) == typeid(NilValue)) return true;
     return false;
 }
 
 bool Value::isProcedure(ValuePtr expr) {
-    if (dynamic_pointer_cast<BuiltinProcValue>(expr) ||
-        std::dynamic_pointer_cast<LambdaValue>(expr))
-        return true;
+    return typeid(*expr) == typeid(LambdaValue) ||
+           typeid(*expr) == typeid(BuiltinProcValue);
+}
+
+bool Value::isSelfEvaluating(ValuePtr expr) {
+    return typeid(*expr) == typeid(NumericValue) ||
+           typeid(*expr) == typeid(BooleanValue) ||
+           typeid(*expr) == typeid(StringValue);
+}
+
+bool Value::isVirtual(ValuePtr expr) {
+    if (auto boolean = dynamic_cast<const BooleanValue*>(expr.get()))
+        return !boolean->getVal();
     return false;
 }
 
@@ -85,7 +96,7 @@ std::string BooleanValue::toString() const {
     return value == true ? "#t" : "#f";
 }
 
-bool BooleanValue::getBool() const {
+bool BooleanValue::getVal() const {
     return value;
 }
 
@@ -104,7 +115,7 @@ std::string StringValue::toString() const {
     return oss.str();
 }
 
-std::string StringValue::getStr() const {
+std::string StringValue::getVal() const {
     return str;
 }
 
@@ -123,7 +134,7 @@ void PairValue::toStringRecursive(std::string& res,
 
     res.append(l_part->toString());
 
-    if (dynamic_pointer_cast<NilValue>(r_part))
+    if (isNil(r_part))
         return;
     else if (auto rp = dynamic_pointer_cast<PairValue>(r_part)) {
         res.push_back(' ');
@@ -152,7 +163,7 @@ std::string BuiltinProcValue::toString() const {
     return "#<procedure>";
 }
 
-std::function<BuiltinFuncType> BuiltinProcValue::getFunc() const {
+std::function<BuiltinFuncType> BuiltinProcValue::getVal() const {
     return func;
 }
 

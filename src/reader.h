@@ -20,6 +20,7 @@ class Reader {
     std::string handleInput(std::string);
 
     // update indent_info
+    
     void handleIndent(const std::string&);
 
 public:

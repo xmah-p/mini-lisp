@@ -29,18 +29,10 @@ std::vector<ValuePtr> Builtins::vectorize(const ValuePtr& ls) {
 std::vector<double> Builtins::numericalize(const std::vector<ValuePtr>& vals) {
     std::vector<double> nums;
     for (auto& val : vals) {
-        auto num = val->asNumber();
-        if (num == std::nullopt)
-            throw LispError("Expected numeric value, got " + val->toString());
-        nums.push_back(*num);
+        double num = val->asNumber();
+        nums.push_back(num);
     }
     return nums;
-}
-
-bool Builtins::isVirtual(ValuePtr expr) {
-    if (auto boolean = std::dynamic_pointer_cast<BooleanValue>(expr))
-        if (!boolean->getBool()) return true;
-    return false;
 }
 
 // calc
@@ -94,40 +86,40 @@ ValuePtr Builtins::divide(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::abs(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    double num = numericalize({params[0]})[0];
+    double num = params[0]->asNumber();
     return std::make_shared<NumericValue>(std::abs(num));
 }
 
 ValuePtr Builtins::expt(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
-    auto nums = numericalize({params[0], params[1]});
+    auto nums = numericalize(params);
     return std::make_shared<NumericValue>(std::pow(nums[0], nums[1]));
 }
 
 ValuePtr Builtins::quotient(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
-    auto nums = numericalize({params[0], params[1]});
+    auto nums = numericalize(params);
     return std::make_shared<NumericValue>(std::trunc(nums[0] / nums[1]));
 }
 
 ValuePtr Builtins::remainder(const std::vector<ValuePtr>& params,
                              EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
-    auto nums = numericalize({params[0], params[1]});
-    double q = *quotient(params, env)->asNumber();
+    auto nums = numericalize(params);
+    double q = std::trunc(nums[0] / nums[1]);
     return std::make_shared<NumericValue>(nums[0] - nums[1] * q);
 }
 
 ValuePtr Builtins::modulo(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
-    auto nums = numericalize({params[0], params[1]});
-    double q = *quotient(params, env)->asNumber();
+    auto nums = numericalize(params);
+    double q = std::trunc(nums[0] / nums[1]);
     q = q < 0 ? q - 1 : q;
     return std::make_shared<NumericValue>(nums[0] - nums[1] * q);
 }
@@ -135,31 +127,31 @@ ValuePtr Builtins::modulo(const std::vector<ValuePtr>& params, EvalEnv& env) {
 // pair and list
 
 ValuePtr Builtins::car(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     if (auto pr = std::dynamic_pointer_cast<PairValue>(params[0]))
         return pr->car();
     else
-        throw LispError("car: argument is not a pair");
+        throw TypeError(params[0]->toString() + " is not a pair");
 }
 
 ValuePtr Builtins::cdr(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     if (auto pr = std::dynamic_pointer_cast<PairValue>(params[0]))
         return pr->cdr();
     else
-        throw LispError("cdr: argument is not a pair");
+        throw TypeError(params[0]->toString() + " is not a pair");
 }
 
 ValuePtr Builtins::cons(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     return std::make_shared<PairValue>(params[0], params[1]);
 }
 
 ValuePtr Builtins::length(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     auto vec = vectorize(params[0]);
     return std::make_shared<NumericValue>(vec.size());
@@ -183,7 +175,7 @@ ValuePtr Builtins::map(const std::vector<ValuePtr>& params, EvalEnv& env) {
 
     std::vector<ValuePtr> mapped;
     if (!Value::isProcedure(params[0]))
-        throw LispError("Not a procedure: " + params[0]->toString());
+        throw TypeError(params[0]->toString() + " is not a procedure");
     auto list = vectorize(params[1]);
 
     ranges::transform(
@@ -193,25 +185,26 @@ ValuePtr Builtins::map(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::filter(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     std::vector<ValuePtr> filtered;
     if (!Value::isProcedure(params[0]))
-        throw LispError("Not a procedure: " + params[0]->toString());
+        throw TypeError(params[0]->toString() + " is not a procedure");
     auto list = vectorize(params[1]);
 
-    ranges::copy_if(
-        list.begin(), list.end(), std::back_inserter(filtered),
-        [&](ValuePtr val) { return !isVirtual(env.apply(params[0], {val})); });
+    ranges::copy_if(list.begin(), list.end(), std::back_inserter(filtered),
+                    [&](ValuePtr val) {
+                        return !Value::isVirtual(env.apply(params[0], {val}));
+                    });
     return Value::makeList(filtered);
 }
 
 ValuePtr Builtins::reduce(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     std::vector<ValuePtr> reduced;
     if (!Value::isProcedure(params[0]))
-        throw LispError("Not a procedure: " + params[0]->toString());
+        throw TypeError(params[0]->toString() + "is not a procedure");
     auto list = vectorize(params[1]);
 
     return std::accumulate(list.begin() + 1, list.end(), list.front(),
@@ -223,79 +216,71 @@ ValuePtr Builtins::reduce(const std::vector<ValuePtr>& params, EvalEnv& env) {
 // type
 
 ValuePtr Builtins::isAtom(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    if (Value::isNil(params[0]) || Value::isSelfEvaluating(params[0]) ||
-        params[0]->asSymbol())
-        return std::make_shared<BooleanValue>(true);
-    return std::make_shared<BooleanValue>(false);
+    return std::make_shared<BooleanValue>(!Value::isPair(params[0]) &&
+                                          !Value::isProcedure(params[0]));
 }
 
 ValuePtr Builtins::isBoolean(const std::vector<ValuePtr>& params,
                              EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    if (std::dynamic_pointer_cast<BooleanValue>(params[0]))
-        return std::make_shared<BooleanValue>(true);
-    return std::make_shared<BooleanValue>(false);
+    return std::make_shared<BooleanValue>(Value::isBoolean(params[0]));
 }
 
 ValuePtr Builtins::isInteger(const std::vector<ValuePtr>& params,
                              EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    if (auto num = params[0]->asNumber()) {
-        return (fmod(*num, 1.0) == 0.0) ? std::make_shared<BooleanValue>(true)
-                                        : std::make_shared<BooleanValue>(false);
-    }
+    if (Value::isNumeric(params[0]))
+        return std::make_shared<BooleanValue>(
+            fmod(params[0]->asNumber(), 1.0) == 0.0);
+
     return std::make_shared<BooleanValue>(false);
 }
 
 ValuePtr Builtins::isList(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     return std::make_shared<BooleanValue>(Value::isList(params[0]));
 }
 
 ValuePtr Builtins::isNumber(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    if (params[0]->asNumber()) return std::make_shared<BooleanValue>(true);
-    return std::make_shared<BooleanValue>(false);
+    return std::make_shared<BooleanValue>(Value::isNumeric(params[0]));
 }
 
 ValuePtr Builtins::isNull(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     return std::make_shared<BooleanValue>(Value::isNil(params[0]));
 }
 
 ValuePtr Builtins::isPair(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     return std::make_shared<BooleanValue>(Value::isPair(params[0]));
 }
 
 ValuePtr Builtins::isProcedure(const std::vector<ValuePtr>& params,
                                EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     return std::make_shared<BooleanValue>(Value::isProcedure(params[0]));
 }
 
 ValuePtr Builtins::isString(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    if (std::dynamic_pointer_cast<StringValue>(params[0]))
-        return std::make_shared<BooleanValue>(true);
-    return std::make_shared<BooleanValue>(false);
+    return std::make_shared<BooleanValue>(Value::isString(params[0]));
 }
 
 ValuePtr Builtins::isSymbol(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 1);
 
-    if (params[0]->asSymbol()) return std::make_shared<BooleanValue>(true);
-    return std::make_shared<BooleanValue>(false);
+    return std::make_shared<BooleanValue>(Value::isSymbol(params[0]));
 }
 
 // core
@@ -317,10 +302,8 @@ ValuePtr Builtins::exit(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 0, 1);
 
     int code = 0;
-    if (!params.empty()) {
-        auto num_vec = numericalize({params[0]});
-        code = static_cast<int>(num_vec[0]);
-    }
+    if (!params.empty()) code = static_cast<int>(params[0]->asNumber());
+
     std::cout << "Program terminated with exit(" + std::to_string(code) + ")"
               << std::endl;
     std::exit(code);
@@ -329,7 +312,7 @@ ValuePtr Builtins::exit(const std::vector<ValuePtr>& params, EvalEnv& env) {
 ValuePtr Builtins::display(const std::vector<ValuePtr>& params, EvalEnv& env) {
     for (auto& val : params) {
         if (auto str = std::dynamic_pointer_cast<StringValue>(val))
-            std::cout << str->getStr();
+            std::cout << str->getVal();
         else
             std::cout << val->toString();
     }
@@ -362,12 +345,10 @@ ValuePtr Builtins::error(const std::vector<ValuePtr>& params, EvalEnv& env) {
 // comp
 
 ValuePtr Builtins::isEq(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
-    if ((std::dynamic_pointer_cast<NumericValue>(params[0]) ||
-         std::dynamic_pointer_cast<SymbolValue>(params[0]) ||
-         std::dynamic_pointer_cast<BooleanValue>(params[0]) ||
-         std::dynamic_pointer_cast<NilValue>(params[0])) &&
+    if ((Value::isNumeric(params[0]) || Value::isSymbol(params[0]) ||
+         Value::isBoolean(params[0]) || Value::isNil(params[0])) &&
         params[0]->toString() == params[1]->toString())
         return std::make_shared<BooleanValue>(true);
     return std::make_shared<BooleanValue>(params[0] == params[1]);
@@ -375,34 +356,34 @@ ValuePtr Builtins::isEq(const std::vector<ValuePtr>& params, EvalEnv& env) {
 
 ValuePtr Builtins::isEqualValue(const std::vector<ValuePtr>& params,
                                 EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     return std::make_shared<BooleanValue>(params[0]->toString() ==
                                           params[1]->toString());
 }
 
 ValuePtr Builtins::isNot(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    return std::make_shared<BooleanValue>(isVirtual(params[0]));
+    return std::make_shared<BooleanValue>(Value::isVirtual(params[0]));
 }
 
 ValuePtr Builtins::greater(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     auto nums = numericalize(params);
     return std::make_shared<BooleanValue>(nums[0] > nums[1]);
 }
 
 ValuePtr Builtins::lesser(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     auto nums = numericalize(params);
     return std::make_shared<BooleanValue>(nums[0] < nums[1]);
 }
 
 ValuePtr Builtins::equalNum(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     auto nums = numericalize(params);
     return std::make_shared<BooleanValue>(nums[0] == nums[1]);
@@ -410,7 +391,7 @@ ValuePtr Builtins::equalNum(const std::vector<ValuePtr>& params, EvalEnv& env) {
 
 ValuePtr Builtins::greaterOrEqual(const std::vector<ValuePtr>& params,
                                   EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     auto nums = numericalize(params);
     return std::make_shared<BooleanValue>(nums[0] >= nums[1]);
@@ -418,35 +399,37 @@ ValuePtr Builtins::greaterOrEqual(const std::vector<ValuePtr>& params,
 
 ValuePtr Builtins::lesserOrEqual(const std::vector<ValuePtr>& params,
                                  EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     auto nums = numericalize(params);
     return std::make_shared<BooleanValue>(nums[0] <= nums[1]);
 }
 
 ValuePtr Builtins::isZero(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    return equalNum({params[0], std::make_shared<NumericValue>(0)}, env);
+    if (Value::isNumeric(params[0]))
+        return std::make_shared<BooleanValue>(params[0]->asNumber() == 0.0);
+    return std::make_shared<BooleanValue>(false);
 }
 
 ValuePtr Builtins::isEven(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    double num = numericalize({params[0]})[0];
+    double num = params[0]->asNumber();
     return std::make_shared<BooleanValue>(std::fmod(num, 2) == 0.0);
 }
 
 ValuePtr Builtins::isOdd(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    double num = numericalize({params[0]})[0];
+    double num = params[0]->asNumber();
     return std::make_shared<BooleanValue>(std::fmod(num, 2) != 0.0 &&
                                           std::fmod(num, 1) == 0.0);
 }
 
 ValuePtr Builtins::max(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     auto nums = numericalize(params);
     double res = *ranges::max_element(nums);
@@ -454,7 +437,7 @@ ValuePtr Builtins::max(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::min(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
     auto nums = numericalize(params);
     double res = *ranges::min_element(nums);
@@ -462,7 +445,7 @@ ValuePtr Builtins::min(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::listRef(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     auto vec = vectorize(params[0]);
     int idx = static_cast<int>(numericalize({params[1]})[0]);
@@ -473,7 +456,7 @@ ValuePtr Builtins::listRef(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::listTail(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 2);
+    checkArgNum(params, 2, 2);
 
     auto vec = vectorize(params[0]);
     int idx = static_cast<int>(numericalize({params[1]})[0]);
@@ -487,7 +470,7 @@ ValuePtr Builtins::forEach(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 2, 2);
 
     if (!Value::isProcedure(params[0]))
-        throw LispError("Not a procedure: " + params[0]->toString());
+        throw TypeError(params[0]->toString() + " is not a procedure");
     auto list = vectorize(params[1]);
 
     ranges::for_each(list.begin(), list.end(),
@@ -519,7 +502,7 @@ ValuePtr Builtins::numberToString(const std::vector<ValuePtr>& params,
                                   EvalEnv& env) {
     checkArgNum(params, 1);
 
-    double num = numericalize({params[0]})[0];
+    double num = params[0]->asNumber();
     std::string str;
     if (std::fmod(num, 1.0) == 0.0)
         str = std::to_string(static_cast<int>(num));
@@ -532,11 +515,7 @@ ValuePtr Builtins::stringToNumber(const std::vector<ValuePtr>& params,
                                   EvalEnv& env) {
     checkArgNum(params, 1);
 
-    std::string str = params[0]->toString();
-    if (!std::dynamic_pointer_cast<StringValue>(params[0]))
-        throw LispError("Not a string: " + str);
-    str.erase(0, 1);
-    str.erase(str.length() - 1, 1);
+    std::string str = params[0]->asString();
     try {
         double num = std::stod(str);
         return std::make_shared<NumericValue>(num);
@@ -548,14 +527,14 @@ ValuePtr Builtins::stringToNumber(const std::vector<ValuePtr>& params,
 ValuePtr Builtins::makeStr(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 1, 2);
 
-    double n = numericalize({params[0]})[0];
+    double n = params[0]->asNumber();
     if (n < 0)
         throw LispError("Cannot make string with negative number " +
                         params[0]->toString());
     char c = ' ';
     if (params.size() == 2) {
         std::string tmp = params[1]->asString();
-        if (tmp.length() != 1) throw LispError("Not a char: \"" + tmp + "\"");
+        if (tmp.length() != 1) throw TypeError("\"" + tmp + "\"" + " is not a char");
         c = tmp[0];
     }
     return std::make_shared<StringValue>(
@@ -586,9 +565,9 @@ ValuePtr Builtins::subStr(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 2, 3);
 
     std::string str = params[0]->asString();
-    std::size_t pos = numericalize({params[1]})[0];
-    std::size_t n{std::string::npos};
-    if (params.size() == 3) n = numericalize({params[2]})[0];
+    std::size_t pos = params[1]->asNumber();
+    std::size_t n = std::string::npos;
+    if (params.size() == 3) n = params[2]->asNumber();
 
     if (n < 0 || pos < 0 || pos >= str.length())
         throw LispError("Range {pos=" + params[1]->toString() +

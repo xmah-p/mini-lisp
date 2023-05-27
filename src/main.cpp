@@ -25,7 +25,7 @@ int test() {
 }
 
 int main(int argc, char **argv) {
-    // return test();
+    return test();
 
     switch (argc) {
         case 1: REPLMode(); break;

@@ -30,6 +30,8 @@ void REPLMode() {
             std::cerr << "SyntaxError: " << e.what() << std::endl;
         } catch (LispError& e) {
             std::cerr << "LispError: " << e.what() << std::endl;
+        } catch (TypeError& e) {
+            std::cerr << "TypeError: " << e.what() << std::endl;
         }
     }
 }
@@ -52,10 +54,12 @@ void fileMode(const std::string& file) {
             std::cerr << "Error occurred in " + file + " line " +
                              std::to_string(line_num)
                       << std::endl;
-            if (dynamic_cast<SyntaxError*>(&e))
+            if (typeid(e) == typeid(SyntaxError))
                 std::cerr << "SyntaxError: ";
-            else if (dynamic_cast<LispError*>(&e))
+            else if (typeid(e) == typeid(LispError))
                 std::cerr << "LispError: ";
+            else if (typeid(e) == typeid(TypeError))
+                std::cerr << "TypeError: ";
             std::cerr << e.what() << std::endl;
             std::exit(0);
         }

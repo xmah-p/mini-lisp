@@ -1,6 +1,5 @@
 #include "./eval_env.h"
 
-
 #include "./builtins.h"
 #include "./error.h"
 #include "./forms.h"
@@ -16,7 +15,6 @@ std::shared_ptr<EvalEnv> EvalEnv::createGlobal() {
 
 std::shared_ptr<EvalEnv> EvalEnv::createChild(
     const std::vector<std::string>& params, const std::vector<ValuePtr>& args) {
-
     auto child = std::shared_ptr<EvalEnv>(new EvalEnv(*this));
     if (params.size() != args.size())
         throw LispError("Procedure expected " + std::to_string(params.size()) +
@@ -35,19 +33,17 @@ std::vector<ValuePtr> EvalEnv::evalList(ValuePtr ls) {
 }
 
 ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
-    if (auto func = dynamic_pointer_cast<BuiltinProcValue>(proc)) {
-        return func->getFunc()(args, *this);
-    } else if (auto func = std::dynamic_pointer_cast<LambdaValue>(proc)) {
+    if (auto func = dynamic_cast<BuiltinProcValue*>(proc.get())) {
+        return func->getVal()(args, *this);
+    } else if (auto func = dynamic_cast<LambdaValue*>(proc.get())) {
         return func->apply(args);
     } else
-        throw LispError("Not a procedure: " + proc->toString());
+        throw TypeError(proc->toString() + "is not a procedure");
 }
 
 void EvalEnv::defineBinding(ValuePtr name, ValuePtr val) {
-    auto sym = name->asSymbol();
-    if (sym == std::nullopt)
-        throw LispError(name->toString() + " is not an identifier");
-    this->symbol_list[*sym] = val;
+    std::string sym = name->asSymbol();
+    this->symbol_list[sym] = val;
 }
 
 ValuePtr& EvalEnv::lookupBinding(std::string name) {
@@ -69,8 +65,8 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
     else if (Value::isNil(expr))
         throw LispError("Evaluating nil is prohibited.");
 
-    else if (auto name = expr->asSymbol()) {
-        return lookupBinding(*name);
+    else if (Value::isSymbol(expr)) {
+        return lookupBinding(expr->asSymbol());
     }
 
     else if (Value::isList(expr)) {
@@ -79,14 +75,15 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
 
         if (Value::isList(vec[0])) vec[0] = eval(vec[0]);
 
-        if (auto name = vec[0]->asSymbol()) {
-            if (SpecialForm::form_list.find(*name) !=
+        if (Value::isSymbol(vec[0])) {
+            std::string name = vec[0]->asSymbol();
+            if (SpecialForm::form_list.find(name) !=
                 SpecialForm::form_list.end()) {
                 // arguments not eval here, eval them inside special forms
-                auto form = SpecialForm::form_list.at(*name);
+                auto form = SpecialForm::form_list.at(name);
                 return form(ls->cdr()->toVector(), *this);
             } else {
-                auto proc = lookupBinding(*name);
+                auto proc = lookupBinding(name);
                 std::vector<ValuePtr> args;
                 if (Value::isList(ls->cdr()))
                     args = evalList(ls->cdr());
@@ -94,8 +91,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
                     args.push_back(eval(ls->cdr()));
                 return apply(proc, args);
             }
-        } else if (dynamic_pointer_cast<LambdaValue>(vec[0]) ||
-                   dynamic_pointer_cast<BuiltinProcValue>(vec[0])) {
+        } else if (Value::isProcedure(vec[0])) {
             std::vector<ValuePtr> args;
             if (Value::isList(ls->cdr()))
                 args = evalList(ls->cdr());
@@ -103,12 +99,13 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
                 args.push_back(eval(ls->cdr()));
             return apply(vec[0], args);
         } else
-            throw LispError("Not a procedure: " + vec[0]->toString());
+            throw TypeError(vec[0]->toString() + "is not a procedure");
     }
 
     else if (Value::isPair(expr))
         throw LispError("Malformed list: " + expr->toString());
 
     else
-        throw LispError("Unknown expression: " + expr->toString());  // dead code
+        throw LispError("Unknown expression: " +
+                        expr->toString());  // dead code
 }

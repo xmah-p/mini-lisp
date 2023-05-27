@@ -30,19 +30,25 @@ protected:
 
 public:
     virtual ~Value() = 0;
-    std::vector<ValuePtr>
-    toVector();  // list to vector, empty vector if nilValue
-    std::optional<std::string> asSymbol() const;
-    std::optional<double> asNumber() const;
-    std::string asString() const;
-    virtual std::string toString() const;
+    virtual std::string toString() const = 0;
+    std::vector<ValuePtr> toVector();
 
+    bool asBool() const;
+    double asNumber() const;
+    std::string asString() const;
+    std::string asSymbol() const;
+
+    static bool isBoolean(ValuePtr expr);
+    static bool isNumeric(ValuePtr expr);
+    static bool isString(ValuePtr expr);
+    static bool isSymbol(ValuePtr expr);
     static bool isNil(ValuePtr expr);
-    static bool isSelfEvaluating(
-        ValuePtr expr);  // return true if numeric / string / boolean
     static bool isPair(ValuePtr expr);
+
     static bool isList(ValuePtr expr);
     static bool isProcedure(ValuePtr expr);
+    static bool isSelfEvaluating(ValuePtr expr);
+    static bool isVirtual(ValuePtr expr);  // true iff expr == #f
 
     static ValuePtr makeList(const std::vector<ValuePtr>& lst);
 };
@@ -53,7 +59,7 @@ private:
 
 public:
     BooleanValue(bool value) : Value(ValueType::BOOLEAN), value{value} {};
-    bool getBool() const;
+    bool getVal() const;
     std::string toString() const final;
 };
 
@@ -73,8 +79,8 @@ private:
 
 public:
     StringValue(const std::string str) : Value(ValueType::STRING), str{str} {}
+    std::string getVal() const;
     std::string toString() const final;
-    std::string getStr() const;
 };
 
 class NilValue : public Value {
@@ -119,7 +125,7 @@ public:
     BuiltinProcValue(std::function<BuiltinFuncType> func)
         : Value(ValueType::BUILTIN_PROC), func{func} {}
     std::string toString() const final;
-    std::function<BuiltinFuncType> getFunc() const;
+    std::function<BuiltinFuncType> getVal() const;
 };
 
 class LambdaValue : public Value {

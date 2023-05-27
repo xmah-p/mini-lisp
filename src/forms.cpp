@@ -10,7 +10,7 @@ ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
         auto signature = args[0]->toVector();
         if (signature.empty())
             throw LispError("Malformed define form: " + args[0]->toString());
-            
+
         std::vector<ValuePtr> lambda_args{args};
         lambda_args[0] =
             Value::makeList({signature.begin() + 1, signature.end()});
@@ -33,14 +33,8 @@ ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
     checkArgNum(args, 2);
 
     std::vector<std::string> params;
-    std::ranges::transform(
-        args[0]->toVector(), std::back_inserter(params), [](ValuePtr v) {
-            return v->asSymbol() == std::nullopt
-                       ? throw LispError(
-                             "Expect symbol in Lambda parameter, found " +
-                             v->toString())
-                       : *v->asSymbol();
-        });
+    std::ranges::transform(args[0]->toVector(), std::back_inserter(params),
+                           [](ValuePtr val) { return val->asSymbol(); });
 
     std::vector<ValuePtr> body(args.begin() + 1, args.end());
     return std::make_shared<LambdaValue>(params, body, env.shared_from_this());
@@ -49,7 +43,7 @@ ValuePtr SpecialForm::lambdaForm(const std::vector<ValuePtr>& args,
 ValuePtr SpecialForm::ifForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     checkArgNum(args, 2);
 
-    if (isVirtual(env.eval(args[0]))) {
+    if (Value::isVirtual(env.eval(args[0]))) {
         if (args.size() < 3) return std::make_shared<NilValue>();
         return env.eval(args[2]);
     }
@@ -60,7 +54,8 @@ ValuePtr SpecialForm::andForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     if (!args.empty()) {
         for (std::size_t i = 0; i != args.size(); ++i) {
             auto val = env.eval(args[i]);
-            if (isVirtual(val)) return std::make_shared<BooleanValue>(false);
+            if (Value::isVirtual(val))
+                return std::make_shared<BooleanValue>(false);
             if (i == args.size() - 1) return val;
         }
     }
@@ -71,7 +66,7 @@ ValuePtr SpecialForm::orForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     if (!args.empty()) {
         for (auto& arg : args) {
             auto val = env.eval(arg);
-            if (isVirtual(val)) continue;
+            if (Value::isVirtual(val)) continue;
             return val;
         }
     }
@@ -90,7 +85,7 @@ ValuePtr SpecialForm::condForm(const std::vector<ValuePtr>& args,
             cond = std::make_shared<BooleanValue>(true);
         } else
             cond = env.eval(clause[0]);
-        if (isVirtual(cond)) continue;
+        if (Value::isVirtual(cond)) continue;
         if (clause.size() == 1) return cond;
         for (std::size_t j = 1; j != clause.size(); ++j) {
             if (j == clause.size() - 1) return env.eval(clause[j]);
@@ -121,11 +116,7 @@ ValuePtr SpecialForm::letForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
         auto bind_vec = vectorize(bind);
         checkArgNum(bind_vec, 2, 2);
 
-        names.push_back(
-            bind_vec[0]->asSymbol() == std::nullopt
-                ? throw LispError("Expected let binding name, got " +
-                                  bind_vec[0]->toString())
-                : *bind_vec[0]->asSymbol());
+        names.push_back(bind_vec[0]->asSymbol());
 
         values.push_back(env.eval(bind_vec[1]));
     }
@@ -143,8 +134,10 @@ ValuePtr SpecialForm::quoteForm(const std::vector<ValuePtr>& args,
 ValuePtr SpecialForm::quasiquoteForm(const std::vector<ValuePtr>& args,
                                      EvalEnv& env) {
     if (!Value::isList(args[0])) return args[0];
+
     auto quoted = args[0]->toVector();
-    if (quoted[0]->asSymbol() == "unquote") return env.eval(quoted[1]);
+    if (Value::isSymbol(quoted[0]) && quoted[0]->asSymbol() == "unquote")
+        return env.eval(quoted[1]);
 
     for (auto& expr : quoted) {
         if (Value::isList(expr) &&
@@ -165,10 +158,8 @@ ValuePtr SpecialForm::unquoteForm(const std::vector<ValuePtr>& args,
 ValuePtr SpecialForm::setForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     checkArgNum(args, 2);
 
-    auto name = args[0]->asSymbol();
-    if (name == std::nullopt)
-        throw LispError("Invalid argument: " + args[0]->toString());
-    return env.lookupBinding(*name) = env.eval(args[1]);
+    std::string name = args[0]->asSymbol();
+    return env.lookupBinding(name) = env.eval(args[1]);
 }
 
 extern const std::unordered_map<std::string, SpecialFormType*>
