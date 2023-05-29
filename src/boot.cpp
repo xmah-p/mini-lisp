@@ -10,11 +10,21 @@
 #include "./tokenizer.h"
 #include "./value.h"
 
-ValuePtr evaluate(std::deque<TokenPtr> tokens) {
+ValuePtr evaluate(std::string expr) {
+    auto tokens = Tokenizer::tokenize(expr);
     Parser parser(std::move(tokens));
     auto value = parser.parse();
     static auto env = EvalEnv::createGlobal();
     return env->eval(std::move(value));
+}
+
+ValuePtr readParse(std::istream& is) {
+    Reader reader(is);
+    std::string expr = reader.read();
+    if (reader.fail()) std::exit(0);
+    auto tokens = Tokenizer::tokenize(expr);
+    Parser parser(std::move(tokens));
+    return parser.parse();
 }
 
 void REPLMode() {
@@ -23,8 +33,7 @@ void REPLMode() {
             Reader reader(std::cin);
             std::string expr = reader.read();
             if (reader.fail()) std::exit(0);
-            auto tokens = Tokenizer::tokenize(expr);
-            auto result = evaluate(std::move(tokens));
+            auto result = evaluate(expr);
             std::cout << result->toString() << std::endl;
         } catch (SyntaxError& e) {
             std::cerr << "SyntaxError: " << e.what() << std::endl;
@@ -48,8 +57,7 @@ void fileMode(const std::string& file) {
             Reader reader(src, &line_num);
             std::string expr = reader.read();
             if (reader.fail()) break;
-            auto tokens = Tokenizer::tokenize(expr);
-            auto result = evaluate(std::move(tokens));
+            auto result = evaluate(expr);
         } catch (std::runtime_error& e) {
             std::cerr << "Error occurred in " + file + " line " +
                              std::to_string(line_num)

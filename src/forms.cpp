@@ -1,5 +1,10 @@
 #include "./forms.h"
 
+#include <algorithm>
+#include <ranges>
+#include <iostream>
+
+#include "./boot.h"
 #include "./error.h"
 
 ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
@@ -156,10 +161,38 @@ ValuePtr SpecialForm::unquoteForm(const std::vector<ValuePtr>& args,
 // extra
 
 ValuePtr SpecialForm::setForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
-    checkArgNum(args, 2);
+    checkArgNum(args, 2, 2);
 
     std::string name = args[0]->asSymbol();
     return env.lookupBinding(name) = env.eval(args[1]);
+}
+
+ValuePtr SpecialForm::loadForm(const std::vector<ValuePtr>& args,
+                               EvalEnv& env) {
+    checkArgNum(args, 1, 1);
+
+    std::string filename = args[0]->asString();
+    fileMode(filename);
+    return std::make_shared<NilValue>();
+}
+
+ValuePtr SpecialForm::readLineForm(const std::vector<ValuePtr>& args,
+                                   EvalEnv& env) {
+    return std::make_shared<StringValue>(readForm(args, env)->toString());
+}
+
+ValuePtr SpecialForm::readForm(const std::vector<ValuePtr>& args,
+                               EvalEnv& env) {
+    checkArgNum(args, 0, 0);
+
+    return readParse(std::cin);
+}
+
+ValuePtr SpecialForm::readEvalForm(const std::vector<ValuePtr>& args,
+                               EvalEnv& env) {
+    checkArgNum(args, 0, 0);
+
+    return env.eval(readParse(std::cin));
 }
 
 extern const std::unordered_map<std::string, SpecialFormType*>
@@ -169,4 +202,7 @@ extern const std::unordered_map<std::string, SpecialFormType*>
         {"and", andForm},         {"or", orForm},
         {"begin", beginForm},     {"let", letForm},
         {"cond", condForm},       {"quasiquote", quasiquoteForm},
-        {"unquote", unquoteForm}, {"set!", setForm}};
+        {"unquote", unquoteForm}, {"set!", setForm},
+        {"load", loadForm},       {"read-line", readLineForm},
+        {"read", readForm},
+    };

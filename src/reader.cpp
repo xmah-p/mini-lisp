@@ -1,8 +1,8 @@
 #include "./reader.h"
 
+#include <algorithm>
 #include <iostream>
 #include <numeric>
-#include <stack>
 #include <string>
 
 #include "./error.h"
@@ -11,7 +11,7 @@ bool Reader::fail() {
     return is.fail();
 }
 
-std::string Reader::handleInput(std::string str) {
+std::string Reader::muteString(std::string str) {
     auto npos = std::string::npos;
     if (str.find(';') != npos) str.erase(str.find(';'));
 
@@ -24,8 +24,26 @@ std::string Reader::handleInput(std::string str) {
     return str;
 }
 
+void Reader::removeComments(std::string& str) {
+    auto npos = std::string::npos;
+    auto cmt_bg = str.find("#|");
+    auto cmt_ed = str.find("|#");
+
+    while (cmt_bg != npos) {
+        if (cmt_ed == npos || cmt_ed < cmt_bg)
+            throw SyntaxError("Unmatched comment!");
+        else
+            str.erase(cmt_bg, cmt_ed - cmt_bg + 2);
+        cmt_bg = str.find("#|");
+        cmt_ed = str.find("|#");
+    }
+    if (str.find("|#") != npos) throw SyntaxError("Unmatched comment!");
+    auto pos = str.find(';');
+    if (pos != npos) str.erase(pos);
+}
+
 void Reader::handleIndent(const std::string& expr) {
-    std::string str = handleInput(expr);
+    std::string str = muteString(expr);
     bool first_Lparen = true;
 
     int prev = 0;
@@ -47,10 +65,27 @@ void Reader::handleIndent(const std::string& expr) {
 }
 
 bool Reader::emptyExpr(const std::string& str) {
-    auto pos = std::min(str.length(), str.find(';'));
-    if (str == "") return true;
-    if (std::all_of(str.begin(), str.begin() + pos,
-                    [](char c) { return std::isspace(c); }))
+    auto npos = std::string::npos;
+    auto cmt_bg = str.find("#|");
+    auto cmt_ed = str.find("|#");
+
+    if (!in_comment && cmt_ed < cmt_bg) throw SyntaxError("Unmatched comment!");
+    if (cmt_ed != npos) in_comment = false;
+    if (in_comment || str.empty()) return true;
+    if (cmt_bg != npos) {
+        if (cmt_ed == npos || cmt_ed < cmt_bg)
+            in_comment = true;
+        else
+            return emptyExpr(str.substr(0, cmt_bg) + str.substr(cmt_ed + 2));
+    }
+
+    auto end = std::min(str.length(), str.find(';'));
+    end = std::min(end, cmt_bg);
+    auto bg = std::min(str.length(), cmt_ed + 2);
+
+    auto is_space = [](char c) { return std::isspace(c); };
+    if (std::all_of(str.begin(), str.begin() + end, is_space) &&
+        std::all_of(str.begin() + bg, str.end(), is_space))
         return true;
     return false;
 }
@@ -61,11 +96,14 @@ std::string Reader::read() {
         if (FILEMODE)
             (*line_num_ptr)++;
         else
-            std::cout << ">>> ";
-        std::getline(is, line);
-        if (is.fail()) return "";
-    } while (emptyExpr(line));
-
+            std::cout << (in_comment ? "... " : ">>> ");
+        std::string tmpln;
+        std::getline(is, tmpln);
+        line = in_comment ? line + " " + tmpln : tmpln;
+        if (is.fail())
+            return in_comment ? throw SyntaxError("Unclosed comments!") : "";
+    } while (emptyExpr(line) || in_comment);
+    removeComments(line);
     std::string currln = line;
     handleIndent(currln);
     while (!indent_info.empty()) {
@@ -80,10 +118,13 @@ std::string Reader::read() {
                 (*line_num_ptr)++;
             else
                 std::cout << "... " + str_repeat(" ", indent_info.top());
-            std::getline(is, currln);
+            std::string tmpln;
+            std::getline(is, tmpln);
+            currln = in_comment ? currln + " " + tmpln : tmpln;
             if (is.fail()) return "";
-        } while (emptyExpr(currln));
+        } while (emptyExpr(currln) || in_comment);
 
+        removeComments(currln);
         handleIndent(currln);
         line += " " + currln;
     }
