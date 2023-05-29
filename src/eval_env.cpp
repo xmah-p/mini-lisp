@@ -1,5 +1,8 @@
 #include "./eval_env.h"
 
+#include <algorithm>
+#include <ranges>
+
 #include "./builtins.h"
 #include "./error.h"
 #include "./forms.h"
@@ -38,7 +41,7 @@ ValuePtr EvalEnv::apply(ValuePtr proc, std::vector<ValuePtr> args) {
     } else if (auto func = dynamic_cast<LambdaValue*>(proc.get())) {
         return func->apply(args);
     } else
-        throw TypeError(proc->toString() + "is not a procedure");
+        throw TypeError(proc->toString() + " is not a procedure");
 }
 
 void EvalEnv::defineBinding(ValuePtr name, ValuePtr val) {
@@ -99,7 +102,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
                 args.push_back(eval(ls->cdr()));
             return apply(vec[0], args);
         } else
-            throw TypeError(vec[0]->toString() + "is not a procedure");
+            throw TypeError(vec[0]->toString() + " is not a procedure");
     }
 
     else if (Value::isPair(expr))

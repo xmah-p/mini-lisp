@@ -2,6 +2,7 @@
 #define TOKEN_H
 
 #include <string>
+#include <memory>
 
 enum class TokenType {
     LEFT_PAREN,

@@ -1,11 +1,14 @@
 #include "./builtins.h"
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <ranges>
 
 #include "./error.h"
 #include "./eval_env.h"
+
 
 namespace ranges = std::ranges;
 
@@ -40,7 +43,7 @@ std::vector<double> Builtins::numericalize(const std::vector<ValuePtr>& vals) {
 ValuePtr Builtins::add(const std::vector<ValuePtr>& params, EvalEnv& env) {
     double total{0};
     auto nums = numericalize(params);
-    for (auto& num : nums) {
+    for (auto num : nums) {
         total += num;
     }
     return std::make_shared<NumericValue>(total);
@@ -64,7 +67,7 @@ ValuePtr Builtins::subtract(const std::vector<ValuePtr>& params, EvalEnv& env) {
 ValuePtr Builtins::multiply(const std::vector<ValuePtr>& params, EvalEnv& env) {
     double total{1};
     auto nums = numericalize(params);
-    for (auto& num : nums) {
+    for (auto num : nums) {
         total *= num;
     }
     return std::make_shared<NumericValue>(total);
@@ -204,7 +207,7 @@ ValuePtr Builtins::reduce(const std::vector<ValuePtr>& params, EvalEnv& env) {
 
     std::vector<ValuePtr> reduced;
     if (!Value::isProcedure(params[0]))
-        throw TypeError(params[0]->toString() + "is not a procedure");
+        throw TypeError(params[0]->toString() + " is not a procedure");
     auto list = vectorize(params[1]);
 
     return std::accumulate(list.begin() + 1, list.end(), list.front(),
@@ -448,7 +451,7 @@ ValuePtr Builtins::listRef(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 2, 2);
 
     auto vec = vectorize(params[0]);
-    int idx = static_cast<int>(numericalize({params[1]})[0]);
+    std::size_t idx = params[1]->asNumber();
     if (idx >= vec.size())
         throw LispError("List index out of range: " + params[0]->toString() +
                         "[" + std::to_string(idx) + "]");
@@ -459,7 +462,7 @@ ValuePtr Builtins::listTail(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 2, 2);
 
     auto vec = vectorize(params[0]);
-    int idx = static_cast<int>(numericalize({params[1]})[0]);
+    std::size_t idx = params[1]->asNumber();
     if (idx >= vec.size())
         throw LispError("List index out of range: " + params[0]->toString() +
                         "[" + std::to_string(idx) + "]");
@@ -534,7 +537,8 @@ ValuePtr Builtins::makeStr(const std::vector<ValuePtr>& params, EvalEnv& env) {
     char c = ' ';
     if (params.size() == 2) {
         std::string tmp = params[1]->asString();
-        if (tmp.length() != 1) throw TypeError("\"" + tmp + "\"" + " is not a char");
+        if (tmp.length() != 1)
+            throw TypeError("\"" + tmp + "\"" + " is not a char");
         c = tmp[0];
     }
     return std::make_shared<StringValue>(
@@ -545,7 +549,7 @@ ValuePtr Builtins::strRef(const std::vector<ValuePtr>& params, EvalEnv& env) {
     checkArgNum(params, 2, 2);
 
     std::string str = params[0]->asString();
-    std::size_t n = numericalize({params[1]})[0];
+    std::size_t n = params[1]->asNumber();
     if (n >= str.length() || n < 0)
         throw LispError("Index " + params[1]->toString() +
                         " is out of bound of \"" + str + "\"");

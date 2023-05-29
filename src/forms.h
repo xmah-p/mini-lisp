@@ -24,6 +24,11 @@ SpecialFormType unquoteForm;  // '(1 2) is as if (quote (1 2))
 
 // extra
 SpecialFormType setForm;
+SpecialFormType loadForm;
+SpecialFormType readForm;
+SpecialFormType readLineForm;
+SpecialFormType readEvalForm;
+
 
 extern const std::unordered_map<std::string, SpecialFormType*> form_list;
 };  // namespace SpecialForm
