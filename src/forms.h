@@ -28,6 +28,12 @@ SpecialFormType loadForm;
 SpecialFormType readForm;
 SpecialFormType readLineForm;
 SpecialFormType readEvalForm;
+SpecialFormType assertForm;
+SpecialFormType assertTrueForm;
+SpecialFormType checkErrorForm;
+SpecialFormType defineTestForm;
+SpecialFormType runTestForm;
+
 
 
 extern const std::unordered_map<std::string, SpecialFormType*> form_list;

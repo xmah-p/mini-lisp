@@ -7,7 +7,6 @@
 #include "./boot.h"
 #include "./error.h"
 
-
 ValuePtr SpecialForm::defineForm(const std::vector<ValuePtr>& args,
                                  EvalEnv& env) {
     checkArgNum(args, 2);
@@ -168,11 +167,140 @@ ValuePtr SpecialForm::setForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
     return env.lookupBinding(name) = env.eval(args[1]);
 }
 
+ValuePtr SpecialForm::loadForm(const std::vector<ValuePtr>& args,
+                               EvalEnv& env) {
+    checkArgNum(args, 1, 1);
+
+    std::string filename = args[0]->asString();
+    fileMode(filename);
+    return std::make_shared<NilValue>();
+}
+
+ValuePtr SpecialForm::readForm(const std::vector<ValuePtr>& args,
+                               EvalEnv& env) {
+    checkArgNum(args, 0, 0);
+
+    return readParse(std::cin);
+}
+
+ValuePtr SpecialForm::readLineForm(const std::vector<ValuePtr>& args,
+                                   EvalEnv& env) {
+    return std::make_shared<StringValue>(readForm(args, env)->toString());
+}
+
+ValuePtr SpecialForm::readEvalForm(const std::vector<ValuePtr>& args,
+                                   EvalEnv& env) {
+    checkArgNum(args, 0, 0);
+
+    return env.eval(readParse(std::cin));
+}
+
+ValuePtr SpecialForm::assertForm(const std::vector<ValuePtr>& args,
+                                 EvalEnv& env) {
+    checkArgNum(args, 1, 2);
+
+    ValuePtr val = env.eval(args[0]);
+    std::string msg = "";
+    if (args.size() == 2) msg = args[1]->asString();
+
+    try {
+        if (Value::isVirtual(val)) throw TestFailure(msg);
+    } catch (TestFailure& e) {
+        std::cerr << "Assertion failed: (assert " + args[0]->toString() + ")"
+                  << std::endl;
+        if (msg != "") std::cerr << "Message: " + msg << std::endl;
+        throw e;
+    }
+    return std::make_shared<BooleanValue>(true);
+}
+
+ValuePtr SpecialForm::assertTrueForm(const std::vector<ValuePtr>& args,
+                                     EvalEnv& env) {
+    checkArgNum(args, 1, 2);
+
+    ValuePtr val = env.eval(args[0]);
+    bool is_true = val->asBool();
+    std::string msg = "";
+    if (args.size() == 2) msg = args[1]->asString();
+
+    try {
+        if (!is_true) throw TestFailure(msg);
+    } catch (TestFailure& e) {
+        std::cerr << "Assertion failed: (assert-true " + args[0]->toString() +
+                         ")"
+                  << std::endl;
+        if (msg != "") std::cerr << "Message: " + msg << std::endl;
+        throw e;
+    }
+    return std::make_shared<BooleanValue>(true);
+}
+
+ValuePtr SpecialForm::checkErrorForm(const std::vector<ValuePtr>& args,
+                                     EvalEnv& env) {
+    checkArgNum(args, 1, 2);
+
+    std::string msg = "";
+    if (args.size() == 2) msg = args[1]->asString();
+
+    try {
+        ValuePtr val = env.eval(args[0]);
+        std::cerr << "Check-error failed: (check-error " + args[0]->toString() +
+                         ")"
+                  << std::endl;
+        if (msg != "") std::cerr << "Message: " + msg << std::endl;
+    } catch (std::runtime_error& e) {
+        return std::make_shared<BooleanValue>(true);
+    }
+    throw TestFailure(msg);
+}
+
+ValuePtr SpecialForm::defineTestForm(const std::vector<ValuePtr>& args,
+                                     EvalEnv& env) {
+    checkArgNum(args, 2);
+
+    std::vector<ValuePtr> lambda_args{args};
+    lambda_args[0] = Value::makeList({});
+    auto test = lambdaForm(lambda_args, env);
+    env.defineBinding(args[0], test);
+    return quoteForm({args[0]}, env);
+}
+
+ValuePtr SpecialForm::runTestForm(const std::vector<ValuePtr>& args,
+                                  EvalEnv& env) {
+    checkArgNum(args, 1);
+    for (auto& test : args) {
+        try {
+            std::cout << "Running test: " << test->toString() << std::endl;
+            env.eval(Value::makeList({test}));
+            std::cout << "Test passed\n" << std::endl;
+        } catch (TestFailure& e) {
+            std::cout << "Test failed: " << test->toString() << std::endl;
+            throw e;
+        }
+    }
+    std::cout << "All tests passed!" << std::endl;
+    return std::make_shared<NilValue>();
+}
+
 extern const std::unordered_map<std::string, SpecialFormType*>
-    SpecialForm::form_list{
-        {"define", defineForm},   {"lambda", lambdaForm},
-        {"quote", quoteForm},     {"if", ifForm},
-        {"and", andForm},         {"or", orForm},
-        {"begin", beginForm},     {"let", letForm},
-        {"cond", condForm},       {"quasiquote", quasiquoteForm},
-        {"unquote", unquoteForm}, {"set!", setForm}};
+    SpecialForm::form_list{{"define", defineForm},
+                           {"lambda", lambdaForm},
+                           {"quote", quoteForm},
+                           {"if", ifForm},
+                           {"and", andForm},
+                           {"or", orForm},
+                           {"begin", beginForm},
+                           {"let", letForm},
+                           {"cond", condForm},
+                           {"quasiquote", quasiquoteForm},
+                           {"unquote", unquoteForm},
+                           {"set!", setForm},
+                           {"load", loadForm},
+                           {"read", readForm},
+                           {"read-line", readLineForm},
+                           {"read-eval", readEvalForm},
+                           {"assert", assertForm},
+                           {"assert-true", assertTrueForm},
+                           {"check-error", checkErrorForm},
+                           {"define-test", defineTestForm},
+                           {"run-test", runTestForm}};

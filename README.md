@@ -50,60 +50,37 @@
 
 ### 更多的语法
 
-#### 其他
+#### 断言和测试
 
-```scheme
-#|
-comments
-|#
-```
+`(assert expr)`
 
-多行注释以 `#|` 开头，以 `|#` 结束。多行注释中间的内容会被解释器忽略。多行注释不能嵌套。
+`(assert expr msg)`
+
+`msg` 是一个字符串。若 `expr` 求值结果**非虚值**，则返回 `#t`，否则抛出 Test Failure，信息为 `msg`。
 
 
-```scheme
-#|
-comments
-|#
-```
+`(assert-true expr)`
 
-多行注释以 `#|` 开头，以 `|#` 结束。多行注释中间的内容会被解释器忽略。多行注释不能嵌套。
+`(assert-true expr msg)`
+
+`msg` 是一个字符串。`expr` 求值结果应当是布尔值。若 `expr` 求值结果**为 `#t`**，则返回 `#t`，否则抛出 Test Failure，信息为 `msg`。
 
 
-`(max x ...)`
+`(check-error expr)`
 
-返回值：参数中的最大值。
+`(check-error expr msg)`
 
-
-`(min x ...)`
-
-返回值：参数中的最小值。
+`msg` 是一个字符串。先执行 `expr`，若 `expr` 执行过程中抛出 error，则返回 `#t`，否则抛出 error，error 信息为 `msg`。
 
 
-`(set! x y)`
+`(define-test name expr...)`
 
-将 `x` 的值设定为 `y`   返回值：`y`
-
-
-`(load file)`
-
-`file` 是 mini-Lisp 源文件的路径，解释器执行此文件中的所有代码，返回值：空表
+定义名为 `name` 的测试用例，`expr` 是过程体，在运行测试时被顺序执行。
 
 
-`(read-line)`
+`(run-test tst)`
 
-从标准输入读取一行字符串，返回所得的字符串
-
-
-`(read)`
-
-从标准输入读取一个表达式，返回该表达式
-
-
-`(read-eval)`
-
-从标准输入读取一个表达式，返回该表达式的值
-
+执行测试用例 `tst`。返回空表。
 
 #### 列表
 
@@ -173,3 +150,49 @@ comments
 `(string->number str)`
 
 `string` 与 `number` 之间的类型转换。
+
+
+#### 其他
+
+```scheme
+#|
+comments
+|#
+```
+
+多行注释以 `#|` 开头，以 `|#` 结束，规则与 C++ 相同。多行注释不能嵌套。
+
+
+`(max x ...)`
+
+返回值：参数中的最大值。
+
+
+`(min x ...)`
+
+返回值：参数中的最小值。
+
+
+`(set! x y)`
+
+将 `x` 的值设定为 `y`   返回值：`y`
+
+
+`(load file)`
+
+`file` 是 mini-Lisp 源文件的路径，解释器执行此文件中的所有代码，返回值：空表
+
+
+`(read-line)`
+
+从标准输入读取一行字符串，返回所得的字符串
+
+
+`(read)`
+
+从标准输入读取一个表达式，返回该表达式
+
+
+`(read-eval)`
+
+从标准输入读取一个表达式，返回该表达式的值

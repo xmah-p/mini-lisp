@@ -3,19 +3,34 @@
 
 #include <stdexcept>
 
-class SyntaxError : public std::runtime_error {
+class Error : public std::runtime_error {
 public:
     using runtime_error::runtime_error;
+    virtual void handle() = 0;
 };
 
-class LispError : public std::runtime_error {
+class SyntaxError : public Error {
 public:
-    using runtime_error::runtime_error;
+    using Error::Error;
+    void handle() override;
 };
 
-class TypeError : public std::runtime_error {
+class LispError : public Error {
 public:
-    using runtime_error::runtime_error;
+    using Error::Error;
+    void handle() override;
+};
+
+class TypeError : public Error {
+public:
+    using Error::Error;
+    void handle() override;
+};
+
+class TestFailure : public Error {
+public:
+    using Error::Error;
+    void handle() override;
 };
 
 #endif

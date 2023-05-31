@@ -35,12 +35,8 @@ void REPLMode() {
             if (reader.fail()) std::exit(0);
             auto result = evaluate(expr);
             std::cout << result->toString() << std::endl;
-        } catch (SyntaxError& e) {
-            std::cerr << "SyntaxError: " << e.what() << std::endl;
-        } catch (LispError& e) {
-            std::cerr << "LispError: " << e.what() << std::endl;
-        } catch (TypeError& e) {
-            std::cerr << "TypeError: " << e.what() << std::endl;
+        } catch (Error& e) {
+            e.handle();
         }
     }
 }
@@ -58,18 +54,12 @@ void fileMode(const std::string& file) {
             std::string expr = reader.read();
             if (reader.fail()) break;
             auto result = evaluate(expr);
-        } catch (std::runtime_error& e) {
+        } catch (TestFailure& e) {
+        } catch (Error& e) {
             std::cerr << "Error occurred in " + file + " line " +
                              std::to_string(line_num)
                       << std::endl;
-            if (typeid(e) == typeid(SyntaxError))
-                std::cerr << "SyntaxError: ";
-            else if (typeid(e) == typeid(LispError))
-                std::cerr << "LispError: ";
-            else if (typeid(e) == typeid(TypeError))
-                std::cerr << "TypeError: ";
-            std::cerr << e.what() << std::endl;
-            std::exit(0);
+            e.handle();
         }
     }
 }
