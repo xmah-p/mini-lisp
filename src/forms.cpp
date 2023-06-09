@@ -160,13 +160,6 @@ ValuePtr SpecialForm::unquoteForm(const std::vector<ValuePtr>& args,
 
 // extra
 
-ValuePtr SpecialForm::setForm(const std::vector<ValuePtr>& args, EvalEnv& env) {
-    checkArgNum(args, 2, 2);
-
-    std::string name = args[0]->asSymbol();
-    return env.lookupBinding(name) = env.eval(args[1]);
-}
-
 ValuePtr SpecialForm::loadForm(const std::vector<ValuePtr>& args,
                                EvalEnv& env) {
     checkArgNum(args, 1, 1);
@@ -261,7 +254,9 @@ ValuePtr SpecialForm::defineTestForm(const std::vector<ValuePtr>& args,
     std::vector<ValuePtr> lambda_args{args};
     lambda_args[0] = Value::makeList({});
     auto test = lambdaForm(lambda_args, env);
-    env.defineBinding(args[0], test);
+    auto test_sym =
+        std::make_shared<SymbolValue>(args[0]->toString() + "@TEST");
+    env.defineBinding(test_sym, test);
     return quoteForm({args[0]}, env);
 }
 
@@ -273,12 +268,35 @@ ValuePtr SpecialForm::runTestForm(const std::vector<ValuePtr>& args,
             std::cout << "Running test: " << test->toString() << std::endl;
             env.eval(Value::makeList({test}));
             std::cout << "Test passed\n" << std::endl;
-        } catch (TestFailure& e) {
-            std::cout << "Test failed: " << test->toString() << std::endl;
-            throw e;
+        } catch (Error& e) {
+            e.handle();
+            std::cout << "Test failed: " << test->toString() + "\n"
+                      << std::endl;
         }
     }
-    std::cout << "All tests passed!" << std::endl;
+    return std::make_shared<NilValue>();
+}
+
+ValuePtr SpecialForm::runAllTestsForm(const std::vector<ValuePtr>& args,
+                                      EvalEnv& env) {
+    checkArgNum(args, 0, 0);
+    auto tests = env.getAllTestsName();
+    int passed = 0;
+    for (auto& test : tests) {
+        try {
+            std::cout << "Running test: " << test->toString() << std::endl;
+            env.eval(Value::makeList({test}));
+            passed++;
+            std::cout << "Test passed\n" << std::endl;
+        } catch (Error& e) {
+            e.handle();
+            std::cout << "Test failed: " << test->toString() + "\n"
+                      << std::endl;
+        }
+    }
+    std::cout << "Tests passed: " + std::to_string(passed) + "/" +
+                     std::to_string(tests.size())
+              << std::endl;
     return std::make_shared<NilValue>();
 }
 
@@ -294,7 +312,6 @@ extern const std::unordered_map<std::string, SpecialFormType*>
                            {"cond", condForm},
                            {"quasiquote", quasiquoteForm},
                            {"unquote", unquoteForm},
-                           {"set!", setForm},
                            {"load", loadForm},
                            {"read", readForm},
                            {"read-line", readLineForm},
@@ -303,4 +320,5 @@ extern const std::unordered_map<std::string, SpecialFormType*>
                            {"assert-true", assertTrueForm},
                            {"check-error", checkErrorForm},
                            {"define-test", defineTestForm},
-                           {"run-test", runTestForm}};
+                           {"run-test", runTestForm},
+                           {"run-all-tests", runAllTestsForm}};

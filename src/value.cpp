@@ -1,6 +1,7 @@
 #include "./value.h"
 
 #include <iomanip>
+#include <iostream>  // debug
 #include <sstream>
 
 #include "./error.h"
@@ -8,13 +9,16 @@
 
 Value::~Value() {}
 
-std::vector<ValuePtr> Value::toVector() {
+std::vector<ValuePtr> Value::toVector() const {
     std::vector<ValuePtr> vec;
+    if (this->type == ValueType::NIL) return vec;
     if (auto pr = dynamic_cast<const PairValue*>(this)) {
-        do vec.push_back(pr->car());
-        while ((pr = dynamic_cast<const PairValue*>(pr->cdr().get())));
+        vec.push_back(pr->car());
+        auto rest = pr->cdr()->toVector();
+        vec.insert(vec.end(), rest.begin(), rest.end());
+        return vec;
     }
-    return vec;
+    throw TypeError(this->toString() + " is not a list");
 }
 
 bool Value::asBool() const {

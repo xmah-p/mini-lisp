@@ -23,6 +23,8 @@ public:
     ValuePtr apply(ValuePtr proc, std::vector<ValuePtr> args);
     void defineBinding(ValuePtr name, ValuePtr val);
     ValuePtr& lookupBinding(std::string name);
+    ValuePtr& lookupBinding(ValuePtr sym);
+    std::vector<ValuePtr> getAllTestsName();
 };
 
 #endif

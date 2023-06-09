@@ -33,7 +33,7 @@ protected:
 public:
     virtual ~Value() = 0;
     virtual std::string toString() const = 0;
-    std::vector<ValuePtr> toVector();
+    std::vector<ValuePtr> toVector() const;
 
     bool asBool() const;
     double asNumber() const;

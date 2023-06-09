@@ -432,7 +432,7 @@ ValuePtr Builtins::isOdd(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::max(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1, 1);
+    checkArgNum(params, 1);
 
     auto nums = numericalize(params);
     double res = *ranges::max_element(nums);
@@ -440,7 +440,7 @@ ValuePtr Builtins::max(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::min(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1, 1);
+    checkArgNum(params, 1);
 
     auto nums = numericalize(params);
     double res = *ranges::min_element(nums);
@@ -657,4 +657,5 @@ extern const std::unordered_map<std::string, BuiltinFuncType*>
                                {"string-length", strLength},
                                {"string-append", strAppend},
                                {"string-copy", strCopy},
-                               {"substring", subStr}};
+                               {"substring", subStr}
+                               };

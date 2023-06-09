@@ -50,13 +50,27 @@ void EvalEnv::defineBinding(ValuePtr name, ValuePtr val) {
 }
 
 ValuePtr& EvalEnv::lookupBinding(std::string name) {
-    while (symbol_list.find(name) == symbol_list.end()) {
+    if (symbol_list.find(name) == symbol_list.end()) {
         if (this->parent != nullptr)
             return this->parent->lookupBinding(name);
         else
             throw LispError("Unbound variable " + name);
     }
     return symbol_list.at(name);
+}
+
+ValuePtr& EvalEnv::lookupBinding(ValuePtr name) {
+    return lookupBinding(name->asSymbol());
+}
+
+std::vector<ValuePtr> EvalEnv::getAllTestsName() {
+    std::vector<ValuePtr> names;
+    for (auto&& [sym, test] : symbol_list) {
+        if (sym.find("@TEST") != std::string::npos) {
+            names.push_back(std::make_shared<SymbolValue>(sym));
+        }
+    }
+    return names;
 }
 
 ValuePtr EvalEnv::eval(ValuePtr expr) {
@@ -69,7 +83,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         throw LispError("Evaluating nil is prohibited.");
 
     else if (Value::isSymbol(expr)) {
-        return lookupBinding(expr->asSymbol());
+        return lookupBinding(expr);
     }
 
     else if (Value::isList(expr)) {
