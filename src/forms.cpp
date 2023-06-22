@@ -196,15 +196,13 @@ ValuePtr SpecialForm::assertForm(const std::vector<ValuePtr>& args,
     std::string msg = "";
     if (args.size() == 2) msg = args[1]->asString();
 
-    try {
-        if (Value::isVirtual(val)) throw TestFailure(msg);
-    } catch (TestFailure& e) {
+    if (Value::isVirtual(val)) {
         std::cerr << "Assertion failed: (assert " + args[0]->toString() + ")"
                   << std::endl;
         if (msg != "") std::cerr << "Message: " + msg << std::endl;
-        throw e;
-    }
-    return std::make_shared<BooleanValue>(true);
+        throw TestFailure(msg);
+    } else
+        return std::make_shared<BooleanValue>(true);
 }
 
 ValuePtr SpecialForm::assertTrueForm(const std::vector<ValuePtr>& args,
@@ -216,16 +214,14 @@ ValuePtr SpecialForm::assertTrueForm(const std::vector<ValuePtr>& args,
     std::string msg = "";
     if (args.size() == 2) msg = args[1]->asString();
 
-    try {
-        if (!is_true) throw TestFailure(msg);
-    } catch (TestFailure& e) {
+    if (!is_true) {
         std::cerr << "Assertion failed: (assert-true " + args[0]->toString() +
                          ")"
                   << std::endl;
         if (msg != "") std::cerr << "Message: " + msg << std::endl;
-        throw e;
-    }
-    return std::make_shared<BooleanValue>(true);
+        throw TestFailure(msg);
+    } else
+        return std::make_shared<BooleanValue>(true);
 }
 
 ValuePtr SpecialForm::checkErrorForm(const std::vector<ValuePtr>& args,
@@ -241,7 +237,7 @@ ValuePtr SpecialForm::checkErrorForm(const std::vector<ValuePtr>& args,
                          ")"
                   << std::endl;
         if (msg != "") std::cerr << "Message: " + msg << std::endl;
-    } catch (std::runtime_error& e) {
+    } catch (Error& e) {
         return std::make_shared<BooleanValue>(true);
     }
     throw TestFailure(msg);
@@ -266,7 +262,9 @@ ValuePtr SpecialForm::runTestForm(const std::vector<ValuePtr>& args,
     for (auto& test : args) {
         try {
             std::cout << "Running test: " << test->toString() << std::endl;
-            env.eval(Value::makeList({test}));
+            auto test_sym =
+                std::make_shared<SymbolValue>(test->toString() + "@TEST");
+            env.eval(Value::makeList({test_sym}));
             std::cout << "Test passed\n" << std::endl;
         } catch (Error& e) {
             e.handle();
@@ -283,15 +281,17 @@ ValuePtr SpecialForm::runAllTestsForm(const std::vector<ValuePtr>& args,
     auto tests = env.getAllTestsName();
     int passed = 0;
     for (auto& test : tests) {
+        auto test_name = test->toString().substr(0, test->toString().find("@"));
         try {
-            std::cout << "Running test: " << test->toString() << std::endl;
+            auto test_name =
+                test->toString().substr(0, test->toString().find("@"));
+            std::cout << "Running test: " << test_name << std::endl;
             env.eval(Value::makeList({test}));
             passed++;
             std::cout << "Test passed\n" << std::endl;
         } catch (Error& e) {
             e.handle();
-            std::cout << "Test failed: " << test->toString() + "\n"
-                      << std::endl;
+            std::cout << "Test failed: " << test_name + "\n" << std::endl;
         }
     }
     std::cout << "Tests passed: " + std::to_string(passed) + "/" +

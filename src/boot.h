@@ -7,6 +7,6 @@
 ValuePtr readParse(std::istream&);
 void REPLMode();
 void fileMode(const std::string&);
-void interactiveMode(const std::string&, const std::string&);
+[[deprecated]] void interactiveMode(const std::string&, const std::string&);
 
 #endif

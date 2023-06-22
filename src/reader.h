@@ -10,7 +10,7 @@ class Reader {
     const bool FILEMODE;
     std::stack<std::size_t> indent_info;
 
-    bool emptyExpr(const std::string&);    // if string contains only spaces
+    bool emptyExpr(const std::string&);    // whether expr contains only spaces
 
     std::string muteString(std::string);  // also check if quotes match
     bool handleComments(std::string&);

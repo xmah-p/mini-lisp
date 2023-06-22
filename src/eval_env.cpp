@@ -80,7 +80,7 @@ ValuePtr EvalEnv::eval(ValuePtr expr) {
         return expr;
 
     else if (Value::isNil(expr))
-        throw LispError("Evaluating nil is prohibited.");
+        throw LispError("Evaluating nil is prohibited");
 
     else if (Value::isSymbol(expr)) {
         return lookupBinding(expr);

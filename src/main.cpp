@@ -30,7 +30,6 @@ int main(int argc, char **argv) {
     switch (argc) {
         case 1: REPLMode(); break;
         case 2: fileMode(argv[1]); break;
-        case 3: interactiveMode(argv[1], argv[2]); break;
         default: std::cerr << "Error: Invalid arguments" << std::endl;
     }
 }

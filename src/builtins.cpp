@@ -9,7 +9,6 @@
 #include "./error.h"
 #include "./eval_env.h"
 
-
 namespace ranges = std::ranges;
 
 // helper functions
@@ -432,17 +431,17 @@ ValuePtr Builtins::isOdd(const std::vector<ValuePtr>& params, EvalEnv& env) {
 }
 
 ValuePtr Builtins::max(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    auto nums = numericalize(params);
+    auto nums = numericalize(vectorize(params[0]));
     double res = *ranges::max_element(nums);
     return std::make_shared<NumericValue>(res);
 }
 
 ValuePtr Builtins::min(const std::vector<ValuePtr>& params, EvalEnv& env) {
-    checkArgNum(params, 1);
+    checkArgNum(params, 1, 1);
 
-    auto nums = numericalize(params);
+    auto nums = numericalize(vectorize(params[0]));
     double res = *ranges::min_element(nums);
     return std::make_shared<NumericValue>(res);
 }
@@ -657,5 +656,4 @@ extern const std::unordered_map<std::string, BuiltinFuncType*>
                                {"string-length", strLength},
                                {"string-append", strAppend},
                                {"string-copy", strCopy},
-                               {"substring", subStr}
-                               };
+                               {"substring", subStr}};

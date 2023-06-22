@@ -5,8 +5,8 @@
 #include "./eval_env.h"
 
 using SpecialFormType = ValuePtr(const std::vector<ValuePtr>&, EvalEnv&);
+
 namespace SpecialForm {
-// using helper functions in builtins.h
 using Builtins::checkArgNum, Builtins::numericalize, Builtins::vectorize;
 
 SpecialFormType defineForm;
@@ -19,9 +19,9 @@ SpecialFormType letForm;
 SpecialFormType condForm;
 SpecialFormType quoteForm;
 SpecialFormType quasiquoteForm;
-SpecialFormType unquoteForm;  // '(1 2) is as if (quote (1 2))
+SpecialFormType unquoteForm;
 
-// extra
+// ex
 SpecialFormType loadForm;
 SpecialFormType readForm;
 SpecialFormType readLineForm;
